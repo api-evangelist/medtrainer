@@ -1,0 +1,45 @@
+generated: '2026-08-25'
+method: searched
+source: >-
+  openapi/medtrainer-public-api-openapi.json; https://api.medtrainer.com/docs;
+  https://medtrainer.com/ (probed 2026-08-25)
+versioning:
+  scheme: path
+  pattern: /api/v1/{resource}
+  current_version: v1
+  spec_version: 1.0.0
+  evidence: 'Every one of the 21 operations in the OpenAPI is mounted under /api/v1/; info.version is 1.0.0.'
+  media_type_versioning: false
+  header_versioning: false
+deprecation:
+  policy_published: false
+  sunset_header: unknown
+  deprecation_header: unknown
+  deprecated_operations: []
+  note: >-
+    No deprecation or sunset policy is published, no RFC 8594 Deprecation/Sunset headers are
+    documented, and no operation in the specification carries `deprecated: true`. The only
+    "deprecated" language in the docs page is Redoc's own UI chrome, not a MedTrainer statement.
+    A consumer has no published notice period for a breaking change to v1.
+status_page:
+  published: false
+  probes:
+  - url: https://status.medtrainer.com/
+    status: 000
+    note: Host does not resolve.
+  - url: https://medtrainer.com/status
+    status: 404
+  note: No public uptime/status page found on any MedTrainer host.
+sla:
+  published: false
+  note: No public SLA or uptime commitment. Pricing is quote-based and terms are contractual (https://medtrainer.com/terms/).
+changelog:
+  published: false
+  note: >-
+    No dated API changelog or release notes. The Redoc page carries only Getting started /
+    Prerequisites / Step-by-step sections; there is no changelog anchor and no separate
+    changelog host. The company blog at https://medtrainer.com/blog/ is marketing content,
+    not release notes.
+maturity:
+  stage: generally-available
+  evidence: 'Documented as the "MedTrainer Public API" with a published getting-started flow and self-service key generation inside the platform.'

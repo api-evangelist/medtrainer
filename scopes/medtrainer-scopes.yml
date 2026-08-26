@@ -1,0 +1,47 @@
+generated: '2026-08-25'
+method: probed
+source: >-
+  https://auth.medtrainer.com/.well-known/openid-configuration;
+  https://medtrainer.com/.well-known/oauth-authorization-server
+docs: https://api.medtrainer.com/docs#section/Getting-started
+note: >-
+  The MedTrainer Public API itself declares NO oauth2 security scheme — it authenticates with an
+  X-API-Key header or an opaque bearer token, and therefore has no scope surface at all. An API
+  key is scoped by the permissions of the API key group created in the platform, and those
+  permissions are not published. The scopes below were read from two live OAuth/OIDC discovery
+  documents on other MedTrainer hosts and are recorded so the platform's real authorization
+  surface is not lost — they do NOT govern api.medtrainer.com.
+surfaces:
+- surface: platform identity provider
+  issuer: https://auth.medtrainer.com/
+  protocol: OpenID Connect
+  scopes:
+  - name: openid
+    description: Standard OIDC scope requesting an ID token.
+  - name: profile
+    description: Standard OIDC profile claims.
+  - name: email
+    description: Standard OIDC email claim.
+  - name: email_verified
+  - name: name
+  - name: given_name
+  - name: family_name
+  - name: nickname
+  - name: picture
+  - name: phone
+  - name: address
+  - name: created_at
+  - name: identities
+  - name: offline_access
+    description: Requests a refresh token.
+- surface: MCP server (medtrainer.com WordPress)
+  issuer: https://medtrainer.com
+  protocol: OAuth 2.0 (RFC 8414 + RFC 9728)
+  scopes:
+  - name: mcp
+    description: The only scope advertised for the MedTrainer MCP protected resource at /wp-json/mcp/mcp-oauth-server.
+- surface: MedTrainer Public API
+  issuer: null
+  protocol: api-key / bearer
+  scopes: []
+  note: 'No OAuth scopes. Authorization is per-API-key-group and is configured in the platform UI, not published.'

@@ -1,23 +1,160 @@
 aid: medtrainer
 name: MedTrainer
-description: 'MedTrainer is a company surfaced via the API Evangelist harvest backlog (source: secondary-market)
-  and added to the network as a stub for full-pipeline profiling.'
+description: 'MedTrainer is a healthcare workforce compliance software company that consolidates
+  learning management, credentialing and provider enrollment, document and policy management,
+  incident reporting, safety plans, contract management and exclusion/sanction monitoring
+  into a single all-in-one platform for medical practices, ambulatory surgery centers,
+  urgent care, behavioral health, dental groups, community health centers and long-term
+  care organizations. The company publishes a MedTrainer Public API at api.medtrainer.com,
+  documented with an OpenAPI 3.1 definition rendered through Redoc, that lets external
+  integrations search and manage the core provider directory — locations, divisions,
+  departments, positions, practitioner categories and practitioners. The API is notable
+  for being FHIR-aligned: resource payloads use HL7 FHIR shapes and the application/fhir+json
+  media type, searches return FHIR Bundle envelopes with FHIR search parameters (_count,
+  _page, _elements), and every error is returned as a FHIR OperationOutcome. Access is
+  customer-gated behind an API key generated from the platform Organization settings,
+  and the wider platform authenticates against an Auth0-backed OpenID Connect provider
+  at auth.medtrainer.com.'
 url: https://raw.githubusercontent.com/api-evangelist/medtrainer/refs/heads/main/apis.yml
+image: https://medtrainer.com/wp-content/uploads/2023/04/MedTrainerLogo.svg
 x-type: company
 x-source: harvest:secondary-market
-x-tier: stub
-x-tier-reason: harvest
 specificationVersion: '0.20'
 created: '2026-08-25'
 modified: '2026-08-25'
 tags:
 - Company
-apis: []
+- Healthcare
+- Compliance
+- Credentialing
+- Learning Management
+- Provider Directory
+- FHIR
+- HL7
+- Training
+- Risk Management
+- SaaS
+apis:
+- aid: medtrainer-public-api
+  name: MedTrainer Public API
+  description: 'The MedTrainer Public API allows external integrations to search and manage
+    core directory resources such as locations, divisions, departments, positions, practitioner
+    categories and practitioners. Most resource endpoints return FHIR-aligned JSON with the
+    application/fhir+json content type, search responses are FHIR Bundles with next/prev
+    link relations, and errors are returned as FHIR OperationOutcome documents. Protected
+    endpoints accept either an X-API-Key header or an Authorization: Bearer token, with
+    keys generated from the API keys manager in the platform Organization settings.'
+  humanURL: https://api.medtrainer.com/docs
+  baseURL: https://api.medtrainer.com
+  tags:
+  - Provider Directory
+  - Practitioners
+  - Locations
+  - Divisions
+  - FHIR
+  properties:
+  - type: OpenAPI
+    url: openapi/medtrainer-public-api-openapi.json
+  - type: Documentation
+    url: https://api.medtrainer.com/docs
+  - type: APIReference
+    url: https://api.medtrainer.com/docs
+  - type: GettingStarted
+    url: https://api.medtrainer.com/docs#section/Getting-started
+  - type: Authentication
+    url: authentication/medtrainer-authentication.yml
+  - type: ErrorCatalog
+    url: errors/medtrainer-problem-types.yml
+  - type: RateLimits
+    url: rate-limits/medtrainer-rate-limits.yml
+  - type: Conventions
+    url: conventions/medtrainer-conventions.yml
+  - type: DataModel
+    url: data-model/medtrainer-data-model.yml
+  - type: Overlay
+    url: overlays/medtrainer-public-api-overlay.yaml
+  - type: Conformance
+    url: conformance/medtrainer-conformance.yml
+  - type: Lifecycle
+    url: lifecycle/medtrainer-lifecycle.yml
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
 - FN: APIs.json
   email: info@apis.io
 common:
+- type: VulnerabilityDisclosure
+  url: security/medtrainer-vulnerability-disclosure.yml
 - type: Website
-  url: https://forgeglobal.com/medtrainer_stock/
+  url: https://medtrainer.com/
+- type: DeveloperPortal
+  url: https://api.medtrainer.com/docs
+- type: Documentation
+  url: https://api.medtrainer.com/docs
+- type: APIReference
+  url: https://api.medtrainer.com/docs
+- type: GettingStarted
+  url: https://api.medtrainer.com/docs#section/Getting-started
+- type: Blog
+  url: https://medtrainer.com/blog/
+- type: BlogRSS
+  url: https://medtrainer.com/feed/
+- type: Support
+  url: https://support.medtrainer.com/
+- type: Pricing
+  url: https://medtrainer.com/pricing/
+- type: SignUp
+  url: https://medtrainer.com/demo/
+- type: Login
+  url: https://medtrainer.com/login
+- type: TermsOfService
+  url: https://medtrainer.com/terms/
+- type: PrivacyPolicy
+  url: https://medtrainer.com/privacy/
+- type: Security
+  url: https://medtrainer.com/security/
+- type: Compliance
+  url: conformance/medtrainer-conformance.yml
+- type: Integrations
+  url: https://medtrainer.com/products/integrations/
+- type: OpenAPI
+  url: openapi/medtrainer-public-api-openapi.json
+- type: Authentication
+  url: authentication/medtrainer-authentication.yml
+- type: OAuthScopes
+  url: scopes/medtrainer-scopes.yml
+- type: Conventions
+  url: conventions/medtrainer-conventions.yml
+- type: ErrorCatalog
+  url: errors/medtrainer-problem-types.yml
+- type: DataModel
+  url: data-model/medtrainer-data-model.yml
+- type: Conformance
+  url: conformance/medtrainer-conformance.yml
+- type: Lifecycle
+  url: lifecycle/medtrainer-lifecycle.yml
+- type: RateLimits
+  url: rate-limits/medtrainer-rate-limits.yml
+- type: Plans
+  url: plans/medtrainer-plans-pricing.yml
+- type: Overlay
+  url: overlays/medtrainer-public-api-overlay.yaml
+- type: WellKnown
+  url: well-known/medtrainer-well-known.yml
+- type: OpenIDConnect
+  url: well-known/medtrainer-auth-openid-configuration.json
+- type: MCPServer
+  url: mcp/medtrainer-mcp.yml
+- type: ToolCrosswalk
+  url: mcp/medtrainer-tool-crosswalk.yml
+- type: LLMsTxt
+  url: llms/medtrainer-llms.txt
+- type: AgentSkill
+  url: skills/_index.yml
+- type: DomainSecurity
+  url: security/medtrainer-domain-security.yml
+x-enrichment:
+  date: '2026-08-25'
+  status: enriched
+  artifacts_added: 26
+  pass: local-v1

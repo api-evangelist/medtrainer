@@ -1,0 +1,58 @@
+generated: '2026-08-25'
+method: searched
+source: https://medtrainer.com/pricing/
+plan_count: 3
+currency: USD
+billing_model: quote-based annual subscription, priced per licensed user
+public_prices: false
+note: >-
+  MedTrainer names three tiers publicly but publishes no price, no billing period and no included
+  quota for any of them — every tier is "contact sales" with a stated 24-48 hour quote turnaround.
+  The pricing page states the quote is driven by licensed user count, the features and modules
+  selected, and industry-specific content. Nothing on the pricing page mentions the MedTrainer
+  Public API, so which tier includes API access is not publicly determinable.
+plans:
+- name: Select
+  positioning: Essential Compliance Foundation
+  price: null
+  price_display: Contact sales
+  currency: USD
+  period: null
+  includes:
+  - Core regulatory training
+  - Policy management
+  - Fundamental reporting
+  quota: null
+  overage: null
+  limits: null
+  api_access: undisclosed
+- name: Premier
+  positioning: Advanced Compliance Operations
+  price: null
+  price_display: Contact sales
+  currency: USD
+  period: null
+  includes:
+  - AI-powered compliance tools
+  - Expanded content libraries
+  - Advanced onboarding
+  - Cross-platform reporting
+  quota: null
+  overage: null
+  limits: null
+  api_access: undisclosed
+- name: Signature
+  positioning: Comprehensive Compliance Excellence
+  price: null
+  price_display: Contact sales
+  currency: USD
+  period: null
+  includes:
+  - Extensive platform setup assistance
+  - Support for complex organizations and large data volumes
+  quota: null
+  overage: null
+  limits: null
+  api_access: undisclosed
+free_tier: false
+trial: 'Demo request only — https://medtrainer.com/demo/'

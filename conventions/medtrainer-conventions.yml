@@ -1,0 +1,134 @@
+generated: '2026-08-25'
+method: derived
+source: openapi/medtrainer-public-api-openapi.json; https://api.medtrainer.com/docs
+summary: >-
+  Cross-cutting runtime semantics for the MedTrainer Public API. The API is a FHIR-flavoured REST
+  interface: FHIR media types, FHIR Bundle search envelopes, FHIR search parameters and FHIR
+  OperationOutcome errors, over a conventional path-versioned resource layout.
+auth:
+  style: api-key-header
+  header: X-API-Key
+  alternative: 'Authorization: Bearer <api key>'
+  see: authentication/medtrainer-authentication.yml
+media_types:
+  request: application/json
+  response: application/fhir+json
+  note: 'Resource responses and every error use application/fhir+json; this is the load-bearing FHIR alignment signal.'
+versioning:
+  style: path
+  current: /api/v1
+  see: lifecycle/medtrainer-lifecycle.yml
+pagination:
+  style: page-number
+  params:
+  - name: _count
+    type: integer
+    default: 20
+    minimum: 1
+    description: Number of resources to return.
+  - name: _page
+    type: integer
+    default: 1
+    minimum: 1
+    description: 1-based page number.
+  response_fields:
+  - path: link[]
+    description: 'FHIR Bundle link array carrying absolute next/previous URLs including scheme and host.'
+  - path: total
+    description: Present on search Bundle envelopes.
+  note: 'These are the FHIR search-control parameter names, not the more common limit/offset or cursor conventions.'
+field_selection:
+  supported: true
+  param: _elements
+  style: comma-separated field selector, nested paths allowed on practitioners
+  defaults:
+    locations: id,name
+    divisions: id,name,locations
+    positions: id,name,clinical
+    departments: id,name
+    practitioner_categories: id,name
+    practitioners: full public resource when _elements is omitted
+  nested_examples:
+  - telecom.email
+  - telecom.homePhone
+  - address.city
+  - extension.user.status
+  - extension.user.statusReason
+  - extension.user.userType
+  - extension.provider.npiNumber
+  unknown_selectors: 'Preserved in pagination links but ignored when the resource is built — silently, with no warning issue in the OperationOutcome.'
+expansion:
+  supported: false
+metadata_fields:
+  supported: true
+  style: 'FHIR `extension` objects on Practitioner (user, provider, employment, birthPlace, fnin) rather than a free-form metadata map.'
+request_id_tracing:
+  supported: false
+  note: 'No X-Request-Id / correlation-id header is documented in the specification, and none was returned on the probed 401 response. A consumer has no documented handle to quote to support.'
+error_envelope:
+  format: fhir-operationoutcome
+  media_type: application/fhir+json
+  see: errors/medtrainer-problem-types.yml
+rate_limit_signaling:
+  documented_headers: []
+  exhaustion_status: 429
+  exhaustion_body: 'OperationOutcome with issue[].code = throttled'
+  retry_after: not documented
+  see: rate-limits/medtrainer-rate-limits.yml
+idempotency:
+  supported: false
+  grade: absent
+  header: null
+  scope: null
+  retention: null
+  evidence: >-
+    No Idempotency-Key header, no idempotency query parameter, and no idempotency guidance in the
+    specification or the published docs. Three unsafe write operations exist — createLocation,
+    createDivision and createPractitioner — and a client that retries any of them after a timeout,
+    a 500, or a 502 has no protection against creating a duplicate location, division or
+    practitioner record.
+dry_run_mode:
+  supported: false
+  grade: absent
+  evidence: 'No validate-only / dry-run / preview parameter on any of the 21 operations.'
+reversibility:
+  grade: absent
+  applicable: true
+  applicable_reason: 'The API has a real write surface: 3 create operations, 3 full-replace updates and 3 partial updates across locations, divisions and practitioners.'
+  reversal_operations: []
+  windows: []
+  evidence:
+  - 'The specification declares no DELETE operation on any resource — there is no deleteLocation, deleteDivision or deletePractitioner. Records created through the API cannot be removed through the API.'
+  - 'No cancel, void, undo, restore, rollback, archive or deactivate operation exists in any of the six tags.'
+  - 'The only observable state-reversal lever is a field, not an operation: Practitioner carries `extension.user.status` and `extension.user.statusReason`, which a PATCH could presumably write back — but the specification does not document the permitted status values, does not say whether a deactivated practitioner can be reactivated, and states no window.'
+  note: >-
+    UNGRADED AS DOCUMENTED OR VERIFIED because neither condition is met: there is no reversal
+    operation and therefore no window to state. This is the sharpest agent-readiness gap in the
+    profile. An agent asked to create a practitioner record on api.medtrainer.com cannot undo that
+    action through the API, cannot verify it is undoable, and — with no idempotency key — may not
+    even be able to tell whether it created one record or two. No window is asserted here because
+    MedTrainer states none, and inventing one would be worse than recording the absence.
+write_surface:
+  create:
+  - createLocation
+  - createDivision
+  - createPractitioner
+  replace:
+  - updateLocation
+  - updateDivision
+  - updatePractitioner
+  patch:
+  - patchLocation
+  - patchDivision
+  - patchPractitioner
+  delete: []
+  read_only_resources:
+  - Positions
+  - Departments
+  - Practitioner Categories
+cross_links:
+  errors: errors/medtrainer-problem-types.yml
+  lifecycle: lifecycle/medtrainer-lifecycle.yml
+  authentication: authentication/medtrainer-authentication.yml
+  rate_limits: rate-limits/medtrainer-rate-limits.yml
+  data_model: data-model/medtrainer-data-model.yml

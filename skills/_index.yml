@@ -1,0 +1,36 @@
+generated: '2026-08-25'
+method: generated
+source: openapi/medtrainer-public-api-openapi.json + conventions/medtrainer-conventions.yml
+api: MedTrainer Public API
+note: >-
+  Packaged Agent Skills for the MedTrainer Public API. Every operationId referenced in these
+  skills was verified against openapi/medtrainer-public-api-openapi.json — none is invented.
+  MedTrainer publishes no skills, AGENTS.md or agent documentation of its own; these are
+  API Evangelist generations grounded in the published contract.
+skills:
+- name: medtrainer-onboard-practitioner
+  file: skills/medtrainer-onboard-practitioner.md
+  description: Create a practitioner and attach them to the correct location, division, department and position.
+  writes: true
+  irreversible: true
+  pii: true
+  operations: [searchLocations, searchDivisions, searchDepartments, searchPositions, searchPractitionerCategories, searchPractitioners, createPractitioner, getPractitioner]
+- name: medtrainer-sync-provider-directory
+  file: skills/medtrainer-sync-provider-directory.md
+  description: Read the full provider directory with FHIR Bundle pagination.
+  writes: false
+  irreversible: false
+  pii: true
+  operations: [searchLocations, searchDivisions, searchDepartments, searchPositions, searchPractitionerCategories, searchPractitioners, getLocation, getDivision, getPractitioner]
+- name: medtrainer-manage-locations-and-divisions
+  file: skills/medtrainer-manage-locations-and-divisions.md
+  description: Create and update locations and divisions, with PUT-replace vs PATCH semantics.
+  writes: true
+  irreversible: true
+  pii: false
+  operations: [searchLocations, getLocation, createLocation, updateLocation, patchLocation, searchDivisions, getDivision, createDivision, updateDivision, patchDivision]
+shared_guardrails:
+- 'No DELETE operation exists on any resource — every write through this API is irreversible via the API.'
+- 'No Idempotency-Key support — never blind-retry a POST after a timeout or 5xx.'
+- 'Rate limits are enforced (429, issue[].code "throttled") but unpublished, with no Retry-After header.'
+- 'Practitioner records carry healthcare workforce PII including NPI, home address and birth date.'

@@ -1,0 +1,70 @@
+generated: '2026-08-25'
+method: probed
+source: live GET probes of /.well-known/* on every MedTrainer host in apis.yml
+note: >-
+  Real hits on two hosts. medtrainer.com (the WordPress marketing site) serves RFC 8414
+  authorization-server metadata and RFC 9728 protected-resource metadata that advertise a
+  WordPress-hosted MCP server. auth.medtrainer.com (the Auth0-backed platform identity
+  provider on MedTrainer's own custom domain) serves a full OpenID Connect discovery
+  document. api.medtrainer.com — the MedTrainer Public API host — answers 401 with a FHIR
+  OperationOutcome on every path including /.well-known/*, so nothing there is anonymously
+  readable. No security.txt and no api-catalog anywhere.
+hosts:
+- host: medtrainer.com
+  documents:
+  - path: /.well-known/oauth-authorization-server
+    status: 200
+    file: well-known/medtrainer-oauth-authorization-server.json
+    note: RFC 8414 metadata for the WordPress MCP OAuth server; scopes_supported ["mcp"].
+  - path: /.well-known/oauth-protected-resource
+    status: 200
+    file: well-known/medtrainer-oauth-protected-resource.json
+    note: RFC 9728 metadata naming https://medtrainer.com/wp-json/mcp/mcp-oauth-server as the protected resource.
+  - path: /.well-known/security.txt
+    status: 404
+  - path: /.well-known/openid-configuration
+    status: 404
+    note: 404 returned as the site's HTML 404 page, not a document.
+  - path: /.well-known/api-catalog
+    status: 404
+  - path: /.well-known/ai-plugin.json
+    status: 404
+  - path: /.well-known/agent-card.json
+    status: 404
+  - path: /.well-known/agent.json
+    status: 404
+- host: auth.medtrainer.com
+  documents:
+  - path: /.well-known/openid-configuration
+    status: 200
+    file: well-known/medtrainer-auth-openid-configuration.json
+    note: OpenID Connect discovery for the MedTrainer platform identity provider (Auth0 on a MedTrainer custom domain).
+  - path: /.well-known/oauth-authorization-server
+    status: 200
+    file: well-known/medtrainer-auth-oauth-authorization-server.json
+  - path: /.well-known/security.txt
+    status: 404
+  - path: /.well-known/api-catalog
+    status: 404
+  - path: /.well-known/agent-card.json
+    status: 404
+  - path: /.well-known/agent.json
+    status: 404
+- host: api.medtrainer.com
+  documents:
+  - path: /.well-known/security.txt
+    status: 401
+  - path: /.well-known/openid-configuration
+    status: 401
+  - path: /.well-known/oauth-authorization-server
+    status: 401
+  - path: /.well-known/oauth-protected-resource
+    status: 401
+  - path: /.well-known/api-catalog
+    status: 401
+  - path: /.well-known/ai-plugin.json
+    status: 401
+  - path: /.well-known/agent-card.json
+    status: 401
+  - path: /.well-known/agent.json
+    status: 401

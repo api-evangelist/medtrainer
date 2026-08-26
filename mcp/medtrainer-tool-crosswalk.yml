@@ -1,0 +1,135 @@
+generated: '2026-08-25'
+method: derived
+source: openapi/medtrainer-public-api-openapi.json + probe of https://medtrainer.com/wp-json/mcp/*
+note: MedTrainer runs an MCP server and publishes an OpenAPI, but they describe DIFFERENT surfaces and
+  do not overlap. The MCP endpoint is a WordPress MCP adapter on the medtrainer.com marketing site; the
+  OpenAPI describes the FHIR-aligned MedTrainer Public API on api.medtrainer.com. The MCP tools/list call
+  returns 401 anonymously, so no tool names could be observed and no tool has been mapped to a REST operation.
+  Every REST operation is therefore recorded as rest_only. Nothing is guessed.
+surfaces:
+  openapi:
+    file: openapi/medtrainer-public-api-openapi.json
+    host: https://api.medtrainer.com
+    gated: runtime calls require an X-API-Key or bearer token; the OpenAPI itself is public via the Redoc
+      docs page
+  graphql: null
+  mcp:
+    url: https://medtrainer.com/wp-json/mcp/mcp-oauth-server
+    gated: yes — tools/list returns HTTP 401 without an OAuth token
+crosswalk: []
+mcp_only: []
+rest_only:
+- operationId: searchLocations
+  method: GET
+  path: /api/v1/locations
+  category: Locations
+  reason: MCP tool list is auth-gated; no published tool corresponds to this operation on the public surface.
+- operationId: createLocation
+  method: POST
+  path: /api/v1/locations
+  category: Locations
+  reason: MCP tool list is auth-gated; no published tool corresponds to this operation on the public surface.
+- operationId: getLocation
+  method: GET
+  path: /api/v1/locations/{publicId}
+  category: Locations
+  reason: MCP tool list is auth-gated; no published tool corresponds to this operation on the public surface.
+- operationId: updateLocation
+  method: PUT
+  path: /api/v1/locations/{publicId}
+  category: Locations
+  reason: MCP tool list is auth-gated; no published tool corresponds to this operation on the public surface.
+- operationId: patchLocation
+  method: PATCH
+  path: /api/v1/locations/{publicId}
+  category: Locations
+  reason: MCP tool list is auth-gated; no published tool corresponds to this operation on the public surface.
+- operationId: searchPositions
+  method: GET
+  path: /api/v1/position
+  category: Positions
+  reason: MCP tool list is auth-gated; no published tool corresponds to this operation on the public surface.
+- operationId: getPosition
+  method: GET
+  path: /api/v1/position/{publicId}
+  category: Positions
+  reason: MCP tool list is auth-gated; no published tool corresponds to this operation on the public surface.
+- operationId: searchDepartments
+  method: GET
+  path: /api/v1/departments
+  category: Departments
+  reason: MCP tool list is auth-gated; no published tool corresponds to this operation on the public surface.
+- operationId: getDepartment
+  method: GET
+  path: /api/v1/departments/{publicId}
+  category: Departments
+  reason: MCP tool list is auth-gated; no published tool corresponds to this operation on the public surface.
+- operationId: searchPractitionerCategories
+  method: GET
+  path: /api/v1/practitioner-categories
+  category: Practitioner Categories
+  reason: MCP tool list is auth-gated; no published tool corresponds to this operation on the public surface.
+- operationId: getPractitionerCategory
+  method: GET
+  path: /api/v1/practitioner-categories/{publicId}
+  category: Practitioner Categories
+  reason: MCP tool list is auth-gated; no published tool corresponds to this operation on the public surface.
+- operationId: searchDivisions
+  method: GET
+  path: /api/v1/divisions
+  category: Divisions
+  reason: MCP tool list is auth-gated; no published tool corresponds to this operation on the public surface.
+- operationId: createDivision
+  method: POST
+  path: /api/v1/divisions
+  category: Divisions
+  reason: MCP tool list is auth-gated; no published tool corresponds to this operation on the public surface.
+- operationId: getDivision
+  method: GET
+  path: /api/v1/divisions/{divisionId}
+  category: Divisions
+  reason: MCP tool list is auth-gated; no published tool corresponds to this operation on the public surface.
+- operationId: updateDivision
+  method: PUT
+  path: /api/v1/divisions/{divisionId}
+  category: Divisions
+  reason: MCP tool list is auth-gated; no published tool corresponds to this operation on the public surface.
+- operationId: patchDivision
+  method: PATCH
+  path: /api/v1/divisions/{divisionId}
+  category: Divisions
+  reason: MCP tool list is auth-gated; no published tool corresponds to this operation on the public surface.
+- operationId: createPractitioner
+  method: POST
+  path: /api/v1/practitioner
+  category: Practitioners
+  reason: MCP tool list is auth-gated; no published tool corresponds to this operation on the public surface.
+- operationId: searchPractitioners
+  method: GET
+  path: /api/v1/practitioner
+  category: Practitioners
+  reason: MCP tool list is auth-gated; no published tool corresponds to this operation on the public surface.
+- operationId: getPractitioner
+  method: GET
+  path: /api/v1/practitioner/{publicId}
+  category: Practitioners
+  reason: MCP tool list is auth-gated; no published tool corresponds to this operation on the public surface.
+- operationId: updatePractitioner
+  method: PUT
+  path: /api/v1/practitioner/{publicId}
+  category: Practitioners
+  reason: MCP tool list is auth-gated; no published tool corresponds to this operation on the public surface.
+- operationId: patchPractitioner
+  method: PATCH
+  path: /api/v1/practitioner/{publicId}
+  category: Practitioners
+  reason: MCP tool list is auth-gated; no published tool corresponds to this operation on the public surface.
+coverage:
+  mcp_tools_observed: 0
+  openapi_operations: 21
+  mapped: 0
+  mcp_only: 0
+  rest_only: 21
+  confidence: low
+  confidence_note: 'Confidence is low by construction: the MCP tool list could not be read, so absence
+    of a mapping is unproven, not measured.'

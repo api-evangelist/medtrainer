@@ -1,0 +1,39 @@
+generated: '2026-08-25'
+method: searched
+source: >-
+  registry.npmjs.org search; pypi.org; rubygems.org; packagist.org; crates.io;
+  api.nuget.org; https://api.medtrainer.com/docs
+package_count: 0
+official_sdk_count: 0
+packages: []
+note: >-
+  MedTrainer publishes no client libraries. Searched every public registry that answers
+  unauthenticated and all returned zero results for "medtrainer": npm (0 hits), PyPI
+  (pypi.org/pypi/medtrainer/json -> HTTP 404), RubyGems (empty array), Packagist (total 0),
+  crates.io (total 0), NuGet (totalHits 0). The published API reference at
+  https://api.medtrainer.com/docs contains no SDK, download, or code-sample section beyond
+  Redoc's generated request samples, and no MedTrainer GitHub organization exists
+  (https://github.com/medtrainer -> HTTP 404). There is therefore nothing to record a
+  `version:` or `published:` date against — this is a measured absence, not an unchecked gap.
+registries_checked:
+- registry: npm
+  endpoint: https://registry.npmjs.org/-/v1/search?text=medtrainer
+  results: 0
+- registry: pypi
+  endpoint: https://pypi.org/pypi/medtrainer/json
+  status: 404
+- registry: rubygems
+  endpoint: https://rubygems.org/api/v1/search.json?query=medtrainer
+  results: 0
+- registry: packagist
+  endpoint: https://packagist.org/search.json?q=medtrainer
+  results: 0
+- registry: crates.io
+  endpoint: https://crates.io/api/v1/crates?q=medtrainer
+  results: 0
+- registry: nuget
+  endpoint: https://azuresearch-usnc.nuget.org/query?q=medtrainer
+  results: 0
+- registry: github
+  endpoint: https://github.com/medtrainer
+  status: 404

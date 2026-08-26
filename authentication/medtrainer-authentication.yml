@@ -1,0 +1,64 @@
+generated: '2026-08-25'
+method: searched
+source: >-
+  openapi/medtrainer-public-api-openapi.json;
+  https://api.medtrainer.com/docs#section/Getting-started;
+  https://auth.medtrainer.com/.well-known/openid-configuration
+docs: https://api.medtrainer.com/docs#section/Getting-started
+summary:
+  types:
+  - apiKey
+  - http
+  api_key_in:
+  - header
+  primary: X-API-Key header
+  oauth2: false
+schemes:
+- name: ApiKeyHeader
+  type: apiKey
+  in: header
+  parameter: X-API-Key
+  description: Preferred authentication header for protected endpoints.
+  sources:
+  - openapi/medtrainer-public-api-openapi.json
+- name: BearerAuth
+  type: http
+  scheme: bearer
+  bearerFormat: API key
+  description: 'Alternative authentication scheme using `Authorization: Bearer <token>`. The bearer value is the same API key, not a separately issued OAuth access token.'
+  sources:
+  - openapi/medtrainer-public-api-openapi.json
+key_issuance:
+  self_service: true
+  requires_existing_account: true
+  flow:
+  - Sign in to the MedTrainer platform with an account holding Super Admin or Admin permissions.
+  - Open Organization from the left-hand menu.
+  - Expand "Organization Management" and open "API keys manager".
+  - Create an API key group, supplying a name and description.
+  - The group is created with a "Default" key in Inactive status; change the status to Active before use.
+  source: 'https://api.medtrainer.com/docs#section/Step-by-step (also carried verbatim in info.description of the OpenAPI)'
+  note: >-
+    Keys cannot be obtained without a paying MedTrainer tenant and an admin role. There is no
+    developer sandbox, no free tier and no anonymous key issuance, so the API is customer-gated
+    even though the reference documentation is fully public.
+unauthenticated_behavior:
+  status: 401
+  media_type: application/fhir+json
+  body: '{"resourceType":"OperationOutcome","issue":[{"severity":"error","code":"login","details":{"text":"Missing or invalid authentication credentials. Provide an API key using the X-API-Key header or Authorization: Bearer <token>."}}]}'
+  observed: 'Probed 2026-08-25 against https://api.medtrainer.com/api/v1/locations — the host returns this for every path, including /.well-known/*.'
+related_surfaces:
+- surface: MedTrainer platform sign-in
+  protocol: OpenID Connect / OAuth 2.0
+  issuer: https://auth.medtrainer.com/
+  discovery: well-known/medtrainer-auth-openid-configuration.json
+  note: 'Auth0 on a MedTrainer custom domain. Supports authorization_code with PKCE (S256), refresh tokens, device code, private_key_jwt, and MFA challenge. Governs the LMS/web app, not the Public API.'
+- surface: MedTrainer MCP server
+  protocol: OAuth 2.0 (RFC 8414 + RFC 9728)
+  issuer: https://medtrainer.com
+  scope: mcp
+  note: See mcp/medtrainer-mcp.yml.
+gaps:
+- 'No token rotation, expiry or revocation policy is published for API keys.'
+- 'No key prefix convention is documented, so a leaked key is not self-identifying.'
+- 'No mTLS, no signed requests, and no IP allow-listing are documented for a directory API that carries practitioner PII (names, home addresses, phone, email, NPI, birth place).'

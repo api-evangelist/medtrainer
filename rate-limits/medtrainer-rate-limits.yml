@@ -1,0 +1,38 @@
+generated: '2026-08-25'
+method: searched
+source: >-
+  https://api.medtrainer.com/docs; openapi/medtrainer-public-api-openapi.json;
+  live probe of https://api.medtrainer.com/api/v1/locations (2026-08-25)
+limit_count: 0
+rate_limits: []
+note: >-
+  MedTrainer enforces rate limiting but publishes no numbers. All 21 operations in the
+  specification declare a 429 response returning a FHIR OperationOutcome with
+  issue[].code = "throttled" and the text "Rate limit exceeded. Please retry after a short
+  delay." — but no threshold, no window, no scope (per key / per account / per endpoint), no
+  burst allowance and no Retry-After value are stated anywhere in the specification or on the
+  published docs page. limit_count is 0 because zero numeric limits are published, not because
+  no limiting exists.
+enforcement:
+  documented: true
+  exhaustion_status: 429
+  exhaustion_media_type: application/fhir+json
+  exhaustion_body: '{"resourceType":"OperationOutcome","issue":[{"severity":"error","code":"throttled","details":{"text":"Rate limit exceeded. Please retry after a short delay."}}]}'
+  operations_declaring_429: 21
+headers:
+  documented: []
+  observed: []
+  retry_after: not documented
+  probe:
+    url: https://api.medtrainer.com/api/v1/locations
+    http_status: 401
+    response_headers_seen: [server]
+    note: >-
+      An unauthenticated request returns 401 before any rate-limit accounting, and the response
+      carries no X-RateLimit-*, RateLimit-* or Retry-After header. Confirming runtime headers
+      would require an authenticated key, which requires a paying tenant.
+gap: >-
+  This is the runtime signal an agent most needs and it is absent. A client that receives a 429
+  has no header telling it how long to wait and no documented budget to pace against, so the only
+  available strategy is blind exponential backoff — made worse by the absence of idempotency keys
+  on the three create operations (see conventions/medtrainer-conventions.yml).

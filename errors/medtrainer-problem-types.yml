@@ -1,0 +1,86 @@
+generated: '2026-08-25'
+method: derived
+source: openapi/medtrainer-public-api-openapi.json
+format: fhir-operationoutcome
+media_type: application/fhir+json
+note: >-
+  MedTrainer does not use RFC 9457 problem+json. Every error on the MedTrainer Public API is a
+  FHIR OperationOutcome document: `{"resourceType":"OperationOutcome","issue":[{"severity":...,
+  "code":...,"details":{"text":...}}]}`. The `issue[].code` values come from the FHIR issue-type
+  value set, and `details.text` carries the human-readable message. Some success responses on
+  write operations also return an OperationOutcome with severity `information` and the created
+  resource's public id in `details.id`.
+envelope:
+  resource_type: OperationOutcome
+  array_field: issue
+  fields:
+  - path: issue[].severity
+    values: [error, information]
+  - path: issue[].code
+    description: FHIR issue-type code
+  - path: issue[].details.text
+    description: Human-readable message
+  - path: issue[].details.id
+    description: Resource public id, present on write success outcomes
+problem_types:
+- status: 400
+  name: BadRequest
+  issue_code: invalid
+  title: Request rejected before validation or during request processing
+  examples:
+  - 'Request payload contains invalid "json" data.'
+  - The request could not be processed.
+  operations: 9
+  remediation: Send well-formed JSON with the declared content type; retrying the same body will fail again.
+- status: 401
+  name: InvalidOrMissingApiKey
+  issue_code: login
+  title: Missing credentials or invalid API key
+  examples:
+  - 'Missing or invalid authentication credentials. Provide an API key using the X-API-Key header or Authorization: Bearer <token>.'
+  - Invalid or revoked API key.
+  operations: 21
+  remediation: Supply an active API key in X-API-Key, or a bearer token. Keys are created and activated in the platform's API keys manager and start Inactive.
+- status: 404
+  name: 'NotFound (LocationNotFound, DivisionNotFound, PositionNotFound, PractitionerNotFound, DepartmentNotFound, PractitionerCategoryNotFound)'
+  issue_code: not-found
+  title: Resource identifier could not be found
+  operations: 14
+  remediation: Verify the public id; ids are opaque strings such as LOC-001, DIV-001, EMP-PUB-002.
+- status: 422
+  name: 'ValidationError (SearchValidationError, LocationValidationError, DivisionCreateValidationError, DivisionUpdateValidationError, PractitionerReadValidationError, PractitionerWriteValidationError)'
+  issue_code: invalid
+  title: Request failed field or search-parameter validation
+  operations: 16
+  remediation: Read issue[].details.text for the offending field. Search validation fires on non-positive _count/_page and unsupported _elements combinations.
+- status: 429
+  name: TooManyRequests
+  issue_code: throttled
+  title: Rate limit exceeded
+  examples:
+  - Rate limit exceeded. Please retry after a short delay.
+  operations: 21
+  remediation: >-
+    Back off and retry. NOTE: the specification documents no Retry-After header, no
+    X-RateLimit-*/RateLimit-* headers and no numeric limit, so a client cannot compute the
+    correct delay — see rate-limits/medtrainer-rate-limits.yml.
+- status: 500
+  name: InternalServerError
+  issue_code: exception
+  title: Unexpected internal error
+  examples:
+  - An internal server error occurred. Please try again later.
+  operations: 21
+  remediation: Retry with backoff. Write operations are not idempotent, so a blind retry of a POST may duplicate the resource.
+- status: 502
+  name: 'BadGateway (LocationBadGateway)'
+  issue_code: invalid
+  title: The requested resource identifier could not be resolved at this time
+  examples:
+  - Public id resolution request failed.
+  operations: 13
+  remediation: Transient dependency failure in the public-id resolver; retry with backoff.
+coverage:
+  operations_total: 21
+  operations_with_4xx: 21
+  distinct_status_codes: [200, 201, 400, 401, 404, 422, 429, 500, 502]

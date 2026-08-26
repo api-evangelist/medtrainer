@@ -1,0 +1,122 @@
+generated: '2026-08-25'
+method: derived
+source: openapi/medtrainer-public-api-openapi.json
+summary: >-
+  The MedTrainer Public API exposes a provider-directory graph with six entities. Practitioner is
+  the hub: it links out to Position, Department, Location and Division. Location and Division are
+  linked to each other in both directions. Positions, Departments and Practitioner Categories are
+  read-only reference vocabularies. Every entity carries a FHIR-style `resourceType` discriminator
+  and an opaque, prefixed public id.
+id_conventions:
+  style: 'prefixed opaque public id, uppercase prefix + hyphen + sequence'
+  prefixes:
+  - entity: Location
+    prefix: LOC-
+    example: LOC-001
+  - entity: Division
+    prefix: DIV-
+    example: DIV-001
+  - entity: Position
+    prefix: POS-
+    example: POS-001
+  - entity: Department
+    prefix: DEPT-
+    example: DEPT-001
+  - entity: PractitionerCategory
+    prefix: PCAT-
+    example: PCAT-001
+  - entity: Practitioner
+    prefix: PRAC- / EMP-PUB-
+    example: PRAC-001
+    note: 'Read responses use PRAC-###; the create-success OperationOutcome example returns EMP-PUB-002, exposing the internal employee-id lineage. Two id shapes for one entity is a real ambiguity for an integrator.'
+entities:
+- name: Location
+  resource_type: Location
+  writable: true
+  operations: [searchLocations, getLocation, createLocation, updateLocation, patchLocation]
+  key_fields: [id, name, addressLine, city, state, zipCode, phoneNumber, fax, email, sendEmail, enabledCredentialing]
+  pii: false
+- name: Division
+  resource_type: Division
+  writable: true
+  operations: [searchDivisions, getDivision, createDivision, updateDivision, patchDivision]
+  key_fields: [id, name, locations]
+  pii: false
+- name: Practitioner
+  resource_type: Practitioner
+  writable: true
+  operations: [searchPractitioners, getPractitioner, createPractitioner, updatePractitioner, patchPractitioner]
+  key_fields: [id, name, telecom, birthDate, gender, address, mailingAddress, departments, position, locations, divisions, extension]
+  pii: true
+  pii_note: >-
+    Carries directly identifying personal data — legal name, home address, mailing address, personal
+    phone, email, birth date, birth place, and NPI number under extension.provider.npiNumber. Any
+    agent or integration touching this entity is handling healthcare workforce PII.
+  extensions:
+  - path: extension.user
+    fields: [status, statusReason, userType]
+    constrained_values:
+      userType: [admin, super_admin, student]
+  - path: extension.provider
+    fields: [npiNumber]
+  - path: extension.employment
+  - path: extension.birthPlace
+  - path: extension.fnin
+- name: Position
+  resource_type: Position
+  writable: false
+  operations: [searchPositions, getPosition]
+  key_fields: [id, name, clinical]
+- name: Department
+  resource_type: Department
+  writable: false
+  operations: [searchDepartments, getDepartment]
+  key_fields: [id, name]
+- name: PractitionerCategory
+  resource_type: PractitionerCategory
+  writable: false
+  operations: [searchPractitionerCategories, getPractitionerCategory]
+  key_fields: [id, name]
+relationships:
+- from: Location
+  to: Division
+  cardinality: belongs_to
+  via: division.id
+  evidence: 'Location.division is an embedded {id,name} reference object.'
+- from: Location
+  to: Location
+  cardinality: has_many
+  via: locations[]
+  evidence: 'Location.locations is an array of child location identifiers, returned only when requested through _elements.'
+- from: Division
+  to: Location
+  cardinality: has_many
+  via: locations[].reference
+  evidence: 'Division.locations is an array of DivisionLocationReference, whose `reference` holds a location id (nullable).'
+- from: Practitioner
+  to: Position
+  cardinality: has_one
+  via: position.id
+  evidence: 'Practitioner.position is a PractitionerLinkedResource.'
+- from: Practitioner
+  to: Department
+  cardinality: has_many
+  via: departments[].id
+  evidence: 'Practitioner.departments is an array of PractitionerLinkedResource.'
+- from: Practitioner
+  to: Location
+  cardinality: has_many
+  via: locations[].id
+  evidence: 'Practitioner.locations is an array of PractitionerLinkedResource.'
+- from: Practitioner
+  to: Division
+  cardinality: has_many
+  via: divisions[].id
+  evidence: 'Practitioner.divisions is an array of PractitionerLinkedResource.'
+envelopes:
+  search: 'FHIR Bundle — <Entity>SearchBundle wrapping <Entity>SearchEntry items plus BundleLink navigation.'
+  error: 'OperationOutcome — see errors/medtrainer-problem-types.yml.'
+gaps:
+- 'PractitionerCategory is exposed as a lookup but nothing in the Practitioner schema references a category id, so the relationship the resource name implies is not expressed in the contract.'
+- 'DivisionLocationReference uses a FHIR-ish `reference` string while every other link uses {id,name} — two link idioms in one API.'
+- 'No entity carries created/updated timestamps or an ETag/version field, so a client cannot do optimistic concurrency or incremental sync.'

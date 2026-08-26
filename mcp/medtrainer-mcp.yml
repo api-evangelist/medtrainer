@@ -1,0 +1,66 @@
+generated: '2026-08-25'
+method: probed
+source: https://medtrainer.com/.well-known/oauth-protected-resource
+name: MedTrainer MCP Server (WordPress MCP Adapter)
+status: published
+summary: >-
+  MedTrainer serves a live, OAuth-protected remote MCP endpoint from its WordPress
+  marketing site at medtrainer.com. It was discovered through RFC 9728 protected-resource
+  metadata at https://medtrainer.com/.well-known/oauth-protected-resource, which names
+  https://medtrainer.com/wp-json/mcp/mcp-oauth-server as the resource and
+  https://medtrainer.com as its authorization server. The WordPress REST route index
+  confirms an `mcp` namespace exposing two servers. IMPORTANT SCOPE NOTE: this MCP surface
+  belongs to the WordPress content site, not to the MedTrainer Public API at
+  api.medtrainer.com. It is a content/site MCP adapter, not a wrapper over the FHIR-aligned
+  provider-directory API.
+deployment:
+  mode: remote
+  endpoint: https://medtrainer.com/wp-json/mcp/mcp-oauth-server
+  auth: oauth
+  verified: probed
+servers:
+- name: mcp-oauth-server
+  endpoint: https://medtrainer.com/wp-json/mcp/mcp-oauth-server
+  methods:
+  - POST
+  - GET
+  - DELETE
+  auth: oauth
+  probe:
+    method: POST tools/list (JSON-RPC 2.0)
+    http_status: 401
+    body: '{"code":"mcp_unauthorized","message":"MCP authentication required.","data":{"status":401}}'
+- name: mcp-adapter-default-server
+  endpoint: https://medtrainer.com/wp-json/mcp/mcp-adapter-default-server
+  methods:
+  - POST
+  - GET
+  - DELETE
+  auth: wordpress-cookie-or-application-password
+  probe:
+    method: POST tools/list (JSON-RPC 2.0)
+    http_status: 401
+    body: '{"code":"rest_forbidden","message":"Sorry, you are not allowed to do that.","data":{"status":401}}'
+authorization:
+  metadata: https://medtrainer.com/.well-known/oauth-authorization-server
+  protected_resource_metadata: https://medtrainer.com/.well-known/oauth-protected-resource
+  issuer: https://medtrainer.com
+  authorization_endpoint: https://medtrainer.com/oauth/authorize
+  token_endpoint: https://medtrainer.com/oauth/token
+  revocation_endpoint: https://medtrainer.com/oauth/revoke
+  grant_types_supported:
+  - authorization_code
+  - refresh_token
+  code_challenge_methods_supported:
+  - S256
+  scopes_supported:
+  - mcp
+  dynamic_client_registration: client_id_metadata_document_supported
+tools:
+  status: gated
+  note: >-
+    tools/list returns HTTP 401 anonymously on both servers, so the live tool set and its
+    inputSchemas require an authenticated OAuth introspection. No tool list is published in
+    llms.txt or anywhere else on the public surface, so none is recorded here. Nothing is
+    inferred or invented.
+  discovered: []

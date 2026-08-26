@@ -1,0 +1,48 @@
+generated: '2026-08-25'
+method: generated
+source: openapi/medtrainer-public-api-openapi.json
+overlay: 1.0.0
+info:
+  title: API Evangelist enhancements for the MedTrainer Public API
+  version: 1.0.0
+extends: ../openapi/medtrainer-public-api-openapi.json
+x-note: >-
+  The harvested specification is left byte-for-byte as MedTrainer publishes it inside the Redoc
+  bundle at https://api.medtrainer.com/docs. Every change API Evangelist would make is expressed
+  here as an OpenAPI Overlay 1.0.0 document instead of mutating the original. The single most
+  consequential change is the servers[] block: MedTrainer publishes `url: "/"`, a relative server
+  that names no host, so a client generated from the raw specification has nowhere to send a
+  request. The real host, confirmed by probe, is https://api.medtrainer.com.
+actions:
+- target: $.servers
+  description: Replace the relative "/" server with the absolute production host confirmed by probe.
+  update:
+  - url: https://api.medtrainer.com
+    description: MedTrainer Public API production host (probed 2026-08-25; returns application/fhir+json).
+- target: $.info
+  description: Add the machine-readable contact and docs links MedTrainer publishes on its own site but omits from the specification.
+  update:
+    contact:
+      name: MedTrainer Support
+      url: https://support.medtrainer.com/
+    x-security-contact: security@medtrainer.com
+    termsOfService: https://medtrainer.com/terms/
+- target: $.externalDocs
+  description: Point at the rendered public reference.
+  update:
+    description: MedTrainer Public API reference (Redoc)
+    url: https://api.medtrainer.com/docs
+- target: $.info
+  description: Declare the HL7 FHIR alignment the description states in prose so it is machine-readable.
+  update:
+    x-domain-standard:
+      standard: HL7 FHIR
+      alignment: fhir-aligned
+      evidence:
+      - Media type application/fhir+json on every resource response.
+      - components.schemas defines OperationOutcome, OperationOutcomeIssue, BundleLink, Location, Practitioner, Position.
+      - Search endpoints return FHIR Bundle envelopes and accept FHIR search parameters _count, _page, _elements.
+      note: >-
+        MedTrainer describes this as "FHIR-aligned", not FHIR-conformant. There is no /metadata
+        CapabilityStatement (probed: 401) and the resource shapes are MedTrainer-specific
+        projections, so this is not a certified FHIR R4 server.
