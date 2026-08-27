@@ -35,26 +35,16 @@ tags:
 - Risk Management
 - SaaS
 apis:
-- aid: medtrainer-public-api
-  name: MedTrainer Public API
-  description: 'The MedTrainer Public API allows external integrations to search and manage
-    core directory resources such as locations, divisions, departments, positions, practitioner
-    categories and practitioners. Most resource endpoints return FHIR-aligned JSON with the
-    application/fhir+json content type, search responses are FHIR Bundles with next/prev
-    link relations, and errors are returned as FHIR OperationOutcome documents. Protected
-    endpoints accept either an X-API-Key header or an Authorization: Bearer token, with
-    keys generated from the API keys manager in the platform Organization settings.'
+- aid: medtrainer:medtrainer-departments-api
+  name: MedTrainer Departments API
+  description: Public department lookup endpoints
   humanURL: https://api.medtrainer.com/docs
   baseURL: https://api.medtrainer.com
   tags:
-  - Provider Directory
-  - Practitioners
-  - Locations
-  - Divisions
-  - FHIR
+  - Departments
   properties:
   - type: OpenAPI
-    url: openapi/medtrainer-public-api-openapi.json
+    url: openapi/medtrainer-departments-api-openapi.yml
   - type: Documentation
     url: https://api.medtrainer.com/docs
   - type: APIReference
@@ -71,8 +61,156 @@ apis:
     url: conventions/medtrainer-conventions.yml
   - type: DataModel
     url: data-model/medtrainer-data-model.yml
-  - type: Overlay
-    url: overlays/medtrainer-public-api-overlay.yaml
+  - type: Conformance
+    url: conformance/medtrainer-conformance.yml
+  - type: Lifecycle
+    url: lifecycle/medtrainer-lifecycle.yml
+- aid: medtrainer:medtrainer-divisions-api
+  name: MedTrainer Divisions API
+  description: Public division lookup and mutation endpoints
+  humanURL: https://api.medtrainer.com/docs
+  baseURL: https://api.medtrainer.com
+  tags:
+  - Divisions
+  properties:
+  - type: OpenAPI
+    url: openapi/medtrainer-divisions-api-openapi.yml
+  - type: Documentation
+    url: https://api.medtrainer.com/docs
+  - type: APIReference
+    url: https://api.medtrainer.com/docs
+  - type: GettingStarted
+    url: https://api.medtrainer.com/docs#section/Getting-started
+  - type: Authentication
+    url: authentication/medtrainer-authentication.yml
+  - type: ErrorCatalog
+    url: errors/medtrainer-problem-types.yml
+  - type: RateLimits
+    url: rate-limits/medtrainer-rate-limits.yml
+  - type: Conventions
+    url: conventions/medtrainer-conventions.yml
+  - type: DataModel
+    url: data-model/medtrainer-data-model.yml
+  - type: Conformance
+    url: conformance/medtrainer-conformance.yml
+  - type: Lifecycle
+    url: lifecycle/medtrainer-lifecycle.yml
+- aid: medtrainer:medtrainer-locations-api
+  name: MedTrainer Locations API
+  description: Public location lookup and mutation endpoints
+  humanURL: https://api.medtrainer.com/docs
+  baseURL: https://api.medtrainer.com
+  tags:
+  - Locations
+  properties:
+  - type: OpenAPI
+    url: openapi/medtrainer-locations-api-openapi.yml
+  - type: Documentation
+    url: https://api.medtrainer.com/docs
+  - type: APIReference
+    url: https://api.medtrainer.com/docs
+  - type: GettingStarted
+    url: https://api.medtrainer.com/docs#section/Getting-started
+  - type: Authentication
+    url: authentication/medtrainer-authentication.yml
+  - type: ErrorCatalog
+    url: errors/medtrainer-problem-types.yml
+  - type: RateLimits
+    url: rate-limits/medtrainer-rate-limits.yml
+  - type: Conventions
+    url: conventions/medtrainer-conventions.yml
+  - type: DataModel
+    url: data-model/medtrainer-data-model.yml
+  - type: Conformance
+    url: conformance/medtrainer-conformance.yml
+  - type: Lifecycle
+    url: lifecycle/medtrainer-lifecycle.yml
+- aid: medtrainer:medtrainer-positions-api
+  name: MedTrainer Positions API
+  description: Public position lookup endpoints
+  humanURL: https://api.medtrainer.com/docs
+  baseURL: https://api.medtrainer.com
+  tags:
+  - Positions
+  properties:
+  - type: OpenAPI
+    url: openapi/medtrainer-positions-api-openapi.yml
+  - type: Documentation
+    url: https://api.medtrainer.com/docs
+  - type: APIReference
+    url: https://api.medtrainer.com/docs
+  - type: GettingStarted
+    url: https://api.medtrainer.com/docs#section/Getting-started
+  - type: Authentication
+    url: authentication/medtrainer-authentication.yml
+  - type: ErrorCatalog
+    url: errors/medtrainer-problem-types.yml
+  - type: RateLimits
+    url: rate-limits/medtrainer-rate-limits.yml
+  - type: Conventions
+    url: conventions/medtrainer-conventions.yml
+  - type: DataModel
+    url: data-model/medtrainer-data-model.yml
+  - type: Conformance
+    url: conformance/medtrainer-conformance.yml
+  - type: Lifecycle
+    url: lifecycle/medtrainer-lifecycle.yml
+- aid: medtrainer:medtrainer-practitioner-categories-api
+  name: MedTrainer Practitioner Categories API
+  description: Public practitioner category lookup endpoints
+  humanURL: https://api.medtrainer.com/docs
+  baseURL: https://api.medtrainer.com
+  tags:
+  - Practitioner Categories
+  properties:
+  - type: OpenAPI
+    url: openapi/medtrainer-practitioner-categories-api-openapi.yml
+  - type: Documentation
+    url: https://api.medtrainer.com/docs
+  - type: APIReference
+    url: https://api.medtrainer.com/docs
+  - type: GettingStarted
+    url: https://api.medtrainer.com/docs#section/Getting-started
+  - type: Authentication
+    url: authentication/medtrainer-authentication.yml
+  - type: ErrorCatalog
+    url: errors/medtrainer-problem-types.yml
+  - type: RateLimits
+    url: rate-limits/medtrainer-rate-limits.yml
+  - type: Conventions
+    url: conventions/medtrainer-conventions.yml
+  - type: DataModel
+    url: data-model/medtrainer-data-model.yml
+  - type: Conformance
+    url: conformance/medtrainer-conformance.yml
+  - type: Lifecycle
+    url: lifecycle/medtrainer-lifecycle.yml
+- aid: medtrainer:medtrainer-practitioners-api
+  name: MedTrainer Practitioners API
+  description: Public practitioner lookup, search, and mutation endpoints
+  humanURL: https://api.medtrainer.com/docs
+  baseURL: https://api.medtrainer.com
+  tags:
+  - Practitioners
+  properties:
+  - type: OpenAPI
+    url: openapi/medtrainer-practitioners-api-openapi.yml
+  - type: Documentation
+    url: https://api.medtrainer.com/docs
+  - type: APIReference
+    url: https://api.medtrainer.com/docs
+  - type: GettingStarted
+    url: https://api.medtrainer.com/docs#section/Getting-started
+  - type: Authentication
+    url: authentication/medtrainer-authentication.yml
+  - type: ErrorCatalog
+    url: errors/medtrainer-problem-types.yml
+  - type: RateLimits
+    url: rate-limits/medtrainer-rate-limits.yml
+  - type: Conventions
+    url: conventions/medtrainer-conventions.yml
+  - type: DataModel
+    url: data-model/medtrainer-data-model.yml
   - type: Conformance
     url: conformance/medtrainer-conformance.yml
   - type: Lifecycle
