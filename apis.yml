@@ -16,6 +16,18 @@ description: 'MedTrainer is a healthcare workforce compliance software company t
   and the wider platform authenticates against an Auth0-backed OpenID Connect provider
   at auth.medtrainer.com.'
 url: https://raw.githubusercontent.com/api-evangelist/medtrainer/refs/heads/main/apis.yml
+deliveryModel:
+  model: saas
+  open_source: false
+  commercial: true
+  callable_host: false
+  label: Hosted service · you call their endpoint
+  confidence: medium
+  source:
+  - openapi
+  - pricing
+  generated: '2026-08-28'
+  method: derived
 image: https://medtrainer.com/wp-content/uploads/2023/04/MedTrainerLogo.svg
 x-type: company
 x-source: harvest:secondary-market
