@@ -1,0 +1,721 @@
+openapi: 3.2.0
+info:
+  title: MedTrainer Public Positions API
+  version: 1.0.0
+  description: "The MedTrainer Public API allows external integrations to search and manage\ncore directory resources such as locations, divisions, and practitioners.\n\nThis specification describes the available endpoints, request parameters,\npayloads, authentication requirements, and expected responses for clients\nintegrating with the platform.\n\nMost resource endpoints return FHIR-aligned JSON with content type\n`application/fhir+json`. Protected endpoints accept authentication through\neither the `X-API-Key` header or `Authorization: Bearer <token>`.\n\n## Getting started\n\nThis guide walks you through how to generate an API Key from the platform.\nThis key will allow you to authenticate and interact with the available\nAPIs.\n\n## Prerequisites\n\n**Before you begin, make sure you have:**\n\nA valid account and access to the platform\n\nProper permissions to generate an `API Key (Super Admin / Admin)`\n\nLogged into the platform\n\n## Step-by-step\n\n**1. Log in to the platform**\n\nSign in to the MedTrainer platform using your credentials.\n\n**2. Open Organization settings**\n\n**Once you're in:**\n\nOn the left-side menu\n\nClick on **Organization**\n\n**3. Expand “Organization Management” and find the “API keys manager”**\n\n**Inside Organization Settings:**\n\nExpand “Organization Management” menu\n\nHere you’ll find all options to configure the organization\n\nLook for “API keys manager” option and click on it\n\n**4. Create a new API Key group**\n\n**In the “API keys manager” page:**\n\nClick on “Create API key group”\n\nFill the following fields:\n\n`name`\n\n`description`\n\nConfirm the action by clicking the “Create” button.\n\n**5. Activate the API Key “Default”**\n\n**After generating the API key group:**\n\nOn the “API Keys Manager” page, you will see the newly created API key\ngroup, along with a “Default” API key in an “Inactive” status.\n\nTo activate the “Default” API key:\n\nClick on the status to expand the available options.\n\nOnce the list is expanded, select the “Active” status\n\n<div class=\"docs-getting-started-callout docs-getting-started-callout--info\">\n  <span class=\"docs-getting-started-callout__icon\" aria-hidden=\"true\"></span>\n  <span>This API key is required and must be available to use the MedTrainer Public APIs</span>\n</div>\n\n<div class=\"docs-getting-started-callout docs-getting-started-callout--warning\">\n  <span class=\"docs-getting-started-callout__icon\" aria-hidden=\"true\"></span>\n  <span><strong>Important:</strong> Treat your API Key like a password. Keep it private and secure.</span>\n</div>\n\n<div class=\"docs-middle-section-divider\" aria-hidden=\"true\"></div>\n"
+servers:
+- url: /
+  description: Public API base URL
+tags:
+- name: Positions
+  description: Public position lookup endpoints
+paths:
+  /api/v1/position:
+    get:
+      tags:
+      - Positions
+      summary: Search positions
+      description: 'Returns a FHIR `Bundle` with position resources.
+
+        '
+      operationId: searchPositions
+      security:
+      - ApiKeyHeader: []
+      - BearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/SearchCount'
+      - $ref: '#/components/parameters/SearchPage'
+      - $ref: '#/components/parameters/SearchElements'
+      responses:
+        '200':
+          description: Position search results
+          content:
+            application/fhir+json:
+              schema:
+                $ref: '#/components/schemas/PositionSearchBundle'
+              examples:
+                default:
+                  value:
+                    resourceType: Bundle
+                    type: searchset
+                    total: 3
+                    link:
+                    - relation: self
+                      url: /api/v1/position?_count=2&_page=2&_elements=id%2Cname%2Cclinical
+                    - relation: first
+                      url: /api/v1/position?_count=2&_page=1&_elements=id%2Cname%2Cclinical
+                    - relation: previous
+                      url: /api/v1/position?_count=2&_page=1&_elements=id%2Cname%2Cclinical
+                    - relation: last
+                      url: /api/v1/position?_count=2&_page=2&_elements=id%2Cname%2Cclinical
+                    entry:
+                    - resource:
+                        resourceType: Position
+                        id: POS-003
+                        name: Supervisor
+                        clinical: true
+        '401':
+          $ref: '#/components/responses/InvalidOrMissingApiKey'
+        '422':
+          $ref: '#/components/responses/SearchValidationError'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /api/v1/position/{publicId}:
+    get:
+      tags:
+      - Positions
+      summary: Get a position by public ID
+      description: 'Resolves the public position identifier before fetching the resource.
+
+        '
+      operationId: getPosition
+      security:
+      - ApiKeyHeader: []
+      - BearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/PositionPublicId'
+      responses:
+        '200':
+          description: Position resource
+          content:
+            application/fhir+json:
+              schema:
+                $ref: '#/components/schemas/Position'
+              examples:
+                default:
+                  value:
+                    resourceType: Position
+                    id: POS-001
+                    name: Analyst
+                    clinical: true
+        '401':
+          $ref: '#/components/responses/InvalidOrMissingApiKey'
+        '404':
+          $ref: '#/components/responses/PositionNotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+components:
+  responses:
+    ValidationError:
+      description: Request validation failed
+      content:
+        application/fhir+json:
+          schema:
+            $ref: '#/components/schemas/OperationOutcome'
+          examples:
+            invalidIntegerQuery:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: This value should be of type integer.
+                  expression:
+                  - _count
+            invalidPageLowerBound:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: Field '_page' must be greater than 0
+                  expression:
+                  - _page
+            invalidElementsType:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: Field '_elements' must be a comma-separated string
+                  expression:
+                  - _elements
+            missingName:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: The Location.name field is required.
+                  expression:
+                  - name
+            missingDivisionName:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: The Division.name field is required.
+                  expression:
+                  - name
+            missingDivisionLocations:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: Field 'locations' is required and must contain at least one location ID string
+                  expression:
+                  - locations
+            invalidLocations:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: Field 'locations' must be an array of non-blank location ID strings
+                  expression:
+                  - locations[1]
+            divisionNameTooLong:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: Field 'name' must be 100 characters or fewer
+                  expression:
+                  - name
+            duplicateDivisionName:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: This division already exists for this company.
+                  expression:
+                  - name
+            divisionLocationsNotFound:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: All locations must exist and belong to the company.
+                  expression:
+                  - locations
+            divisionLocationsAssigned:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: Locations already assigned to another division must first belong to the Default division.
+                  expression:
+                  - locations
+            emptyDivisionUpdatePayload:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: At least one of 'name' or 'locations' must be provided.
+                  expression:
+                  - name
+                  - locations
+            missingState:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: Field 'state' is required and must be a non-blank string
+                  expression:
+                  - state
+            invalidDivisionReference:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: Field 'division.reference' must be a non-blank string
+                  expression:
+                  - division[reference]
+            practitionerResourceType:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: Field 'resourceType' must equal "Practitioner"
+                  expression:
+                  - resourceType
+            practitionerBirthDateFormat:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: Field 'birthDate' must use MM/DD/YYYY format
+                  expression:
+                  - birthDate
+            practitionerMissingRequiredNestedField:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: The Practitioner.telecom.email field is required.
+                  expression:
+                  - telecom.email
+            practitionerInvalidScalar:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: This value should be of type scalar.
+                  expression:
+                  - extension.user.location
+            practitionerInvalidStatus:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: 'Status must be one of: Active, Inactive, or Deactivated.'
+                  expression:
+                  - extension.user.status
+            practitionerInvalidActiveStatusReason:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: 'Status Reason must be one of: Contracted, Independent, Other for status Active.'
+                  expression:
+                  - extension.user.statusReason
+            practitionerInvalidInactiveStatusReason:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: 'Status Reason must be one of: On Leave, Prospect, Other for status Inactive.'
+                  expression:
+                  - extension.user.statusReason
+            practitionerInvalidDeactivatedStatusReason:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: 'Status Reason must be one of: Deceased, Resigned, Retired, Terminated, Other for status Deactivated.'
+                  expression:
+                  - extension.user.statusReason
+            practitionerIncompatibleStatusReason:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: Status Reason "Terminated" is not valid for status "Active".
+                  expression:
+                  - extension.user.statusReason
+            practitionerMissingDeactivatedStatusReason:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: Status Reason is required when status is Deactivated.
+                  expression:
+                  - extension.user.statusReason
+            practitionerCreateMultipleIssues:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: The Practitioner.name.given field is required.
+                  expression:
+                  - name.given
+                - severity: error
+                  code: invalid
+                  details:
+                    text: The Practitioner.extension.employment.positionId field is required.
+                  expression:
+                  - extension.employment.positionId
+                - severity: error
+                  code: invalid
+                  details:
+                    text: The Practitioner.extension.user.location field is required.
+                  expression:
+                  - extension.user.location
+            practitionerUnsupportedWriteField:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: Field 'extension.employment.employeeCategoryId' is not supported.
+                  expression:
+                  - extension.employment.employeeCategoryId
+            practitionerInvalidDepartmentReference:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: One or more department ids could not be resolved.
+                  expression:
+                  - extension.employment.departmentId
+            practitionerInvalidLocationReference:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: One or more location ids could not be resolved.
+                  expression:
+                  - extension.user.location
+    PositionNotFound:
+      description: Position resource was not found
+      content:
+        application/fhir+json:
+          schema:
+            $ref: '#/components/schemas/OperationOutcome'
+          examples:
+            default:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: not-found
+                  details:
+                    text: Position not found.
+    InvalidOrMissingApiKey:
+      description: 'Missing credentials or invalid API key.
+
+        '
+      content:
+        application/fhir+json:
+          schema:
+            $ref: '#/components/schemas/OperationOutcome'
+          examples:
+            missingCredentials:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: login
+                  details:
+                    text: 'Missing or invalid authentication credentials. Provide an API key using the X-API-Key header or Authorization: Bearer <token>.'
+            invalidApiKey:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: login
+                  details:
+                    text: Invalid or revoked API key.
+    SearchValidationError:
+      description: Search request validation failed
+      content:
+        application/fhir+json:
+          schema:
+            $ref: '#/components/schemas/OperationOutcome'
+          examples:
+            invalidIntegerQuery:
+              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/invalidIntegerQuery'
+            invalidPageLowerBound:
+              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/invalidPageLowerBound'
+            invalidElementsType:
+              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/invalidElementsType'
+    TooManyRequests:
+      description: 'Rate limit exceeded.
+
+        '
+      content:
+        application/fhir+json:
+          schema:
+            $ref: '#/components/schemas/OperationOutcome'
+          examples:
+            default:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: throttled
+                  details:
+                    text: Rate limit exceeded. Please retry after a short delay.
+    InternalServerError:
+      description: Unexpected internal error
+      content:
+        application/fhir+json:
+          schema:
+            $ref: '#/components/schemas/OperationOutcome'
+          examples:
+            default:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: exception
+                  details:
+                    text: An internal server error occurred. Please try again later.
+    BadGateway:
+      description: The requested resource identifier could not be resolved at this time
+      content:
+        application/fhir+json:
+          schema:
+            $ref: '#/components/schemas/OperationOutcome'
+          examples:
+            resolverUnavailable:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: Public id resolution request failed.
+  parameters:
+    SearchPage:
+      name: _page
+      in: query
+      required: false
+      description: 1-based page number. Must be a positive integer.
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    PositionPublicId:
+      name: publicId
+      in: path
+      required: true
+      description: Public position identifier.
+      schema:
+        type: string
+        example: POS-001
+    SearchCount:
+      name: _count
+      in: query
+      required: false
+      description: Number of resources to return. Must be a positive integer.
+      schema:
+        type: integer
+        minimum: 1
+        default: 20
+    SearchElements:
+      name: _elements
+      in: query
+      required: false
+      description: 'Comma-separated field selector.
+
+
+        For location, division, position, department, and practitioner category
+
+        searches, the implemented selectors are `id`, `name`, `division`,
+
+        `locations`, and `clinical` as applicable.
+
+        The default when `_elements` is omitted: locations default to
+
+        `id,name`; divisions default to `id,name,locations`; positions default
+
+        to `id,name,clinical`; departments default to `id,name`; practitioner
+
+        categories default to `id,name`.
+
+
+        For practitioners, nested selectors are allowed, including values such
+
+        as `telecom.email`, `telecom.homePhone`, `address.city`,
+
+        `extension.user.status`, `extension.user.statusReason`,
+
+        `extension.user.userType`, or `extension.provider.npiNumber`.
+
+        The public practitioner response uses
+
+        `extension.user.status` and `extension.user.statusReason` for the
+
+        visible status state; the legacy `employeeCategoryId` is not exposed.
+
+        When `_elements` is omitted on practitioner search or get-by-id, the
+
+        full public resource is returned.
+
+
+        Whitespace around values is trimmed. Unknown selectors are preserved in
+
+        pagination links but ignored when each resource is built.
+
+
+        Pagination `link.url` values are returned as absolute URLs including
+
+        scheme and host (for example, `/api/v1/...` resolves against the active
+
+        server entry).
+
+        '
+      schema:
+        type: string
+        example: id,name
+  schemas:
+    Position:
+      type: object
+      additionalProperties: false
+      required:
+      - resourceType
+      properties:
+        resourceType:
+          type: string
+          const: Position
+        id:
+          type: string
+          example: POS-001
+        name:
+          type:
+          - string
+          - 'null'
+          example: Analyst
+        clinical:
+          type: boolean
+          example: true
+    PositionSearchEntry:
+      type: object
+      additionalProperties: false
+      required:
+      - resource
+      properties:
+        resource:
+          $ref: '#/components/schemas/Position'
+    OperationOutcomeIssue:
+      type: object
+      additionalProperties: false
+      required:
+      - severity
+      - code
+      - details
+      properties:
+        severity:
+          type: string
+          enum:
+          - fatal
+          - error
+          - warning
+          - information
+        code:
+          type: string
+          example: invalid
+        details:
+          $ref: '#/components/schemas/OperationOutcomeDetails'
+        expression:
+          type: array
+          items:
+            type: string
+    PositionSearchBundle:
+      type: object
+      additionalProperties: false
+      required:
+      - resourceType
+      - type
+      - total
+      - link
+      - entry
+      properties:
+        resourceType:
+          type: string
+          const: Bundle
+        type:
+          type: string
+          const: searchset
+        total:
+          type: integer
+          minimum: 0
+        link:
+          type: array
+          items:
+            $ref: '#/components/schemas/BundleLink'
+        entry:
+          type: array
+          items:
+            $ref: '#/components/schemas/PositionSearchEntry'
+    OperationOutcome:
+      type: object
+      additionalProperties: false
+      required:
+      - resourceType
+      - issue
+      properties:
+        resourceType:
+          type: string
+          const: OperationOutcome
+        issue:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/OperationOutcomeIssue'
+    BundleLink:
+      type: object
+      additionalProperties: false
+      required:
+      - relation
+      - url
+      properties:
+        relation:
+          type: string
+          enum:
+          - self
+          - first
+          - previous
+          - next
+          - last
+        url:
+          type: string
+          format: uri
+    OperationOutcomeDetails:
+      type: object
+      additionalProperties: false
+      required:
+      - text
+      properties:
+        text:
+          type: string
+        id:
+          type: string
+  securitySchemes:
+    ApiKeyHeader:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: Preferred authentication header for protected endpoints.
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API key
+      description: 'Alternative authentication scheme using `Authorization: Bearer <token>`.'

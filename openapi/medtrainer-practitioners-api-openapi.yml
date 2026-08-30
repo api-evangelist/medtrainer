@@ -1,0 +1,2339 @@
+openapi: 3.2.0
+info:
+  title: MedTrainer Public Practitioners API
+  version: 1.0.0
+  description: "The MedTrainer Public API allows external integrations to search and manage\ncore directory resources such as locations, divisions, and practitioners.\n\nThis specification describes the available endpoints, request parameters,\npayloads, authentication requirements, and expected responses for clients\nintegrating with the platform.\n\nMost resource endpoints return FHIR-aligned JSON with content type\n`application/fhir+json`. Protected endpoints accept authentication through\neither the `X-API-Key` header or `Authorization: Bearer <token>`.\n\n## Getting started\n\nThis guide walks you through how to generate an API Key from the platform.\nThis key will allow you to authenticate and interact with the available\nAPIs.\n\n## Prerequisites\n\n**Before you begin, make sure you have:**\n\nA valid account and access to the platform\n\nProper permissions to generate an `API Key (Super Admin / Admin)`\n\nLogged into the platform\n\n## Step-by-step\n\n**1. Log in to the platform**\n\nSign in to the MedTrainer platform using your credentials.\n\n**2. Open Organization settings**\n\n**Once you're in:**\n\nOn the left-side menu\n\nClick on **Organization**\n\n**3. Expand “Organization Management” and find the “API keys manager”**\n\n**Inside Organization Settings:**\n\nExpand “Organization Management” menu\n\nHere you’ll find all options to configure the organization\n\nLook for “API keys manager” option and click on it\n\n**4. Create a new API Key group**\n\n**In the “API keys manager” page:**\n\nClick on “Create API key group”\n\nFill the following fields:\n\n`name`\n\n`description`\n\nConfirm the action by clicking the “Create” button.\n\n**5. Activate the API Key “Default”**\n\n**After generating the API key group:**\n\nOn the “API Keys Manager” page, you will see the newly created API key\ngroup, along with a “Default” API key in an “Inactive” status.\n\nTo activate the “Default” API key:\n\nClick on the status to expand the available options.\n\nOnce the list is expanded, select the “Active” status\n\n<div class=\"docs-getting-started-callout docs-getting-started-callout--info\">\n  <span class=\"docs-getting-started-callout__icon\" aria-hidden=\"true\"></span>\n  <span>This API key is required and must be available to use the MedTrainer Public APIs</span>\n</div>\n\n<div class=\"docs-getting-started-callout docs-getting-started-callout--warning\">\n  <span class=\"docs-getting-started-callout__icon\" aria-hidden=\"true\"></span>\n  <span><strong>Important:</strong> Treat your API Key like a password. Keep it private and secure.</span>\n</div>\n\n<div class=\"docs-middle-section-divider\" aria-hidden=\"true\"></div>\n"
+servers:
+- url: /
+  description: Public API base URL
+tags:
+- name: Practitioners
+  description: Public practitioner lookup, search, and mutation endpoints
+paths:
+  /api/v1/practitioner:
+    post:
+      tags:
+      - Practitioners
+      summary: Create a practitioner
+      description: 'Creates a practitioner/provider profile for the authenticated company context.
+
+
+        A `422` response indicates either request-body validation failures,
+
+        unresolved related public IDs such as
+
+        `extension.employment.positionId`,
+
+        `extension.employment.departmentId`, or
+
+        `extension.user.location`, or a validation error returned by the
+
+        upstream provider-profile API.
+
+        '
+      operationId: createPractitioner
+      security:
+      - ApiKeyHeader: []
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PractitionerWriteRequest'
+            examples:
+              default:
+                value:
+                  resourceType: Practitioner
+                  name:
+                    given: John
+                    family: Doe
+                    middle: Allen
+                    other:
+                      given: Jonathan
+                      middle: Alpha
+                      family: Public
+                      suffix: III
+                      usageStartDate: 02/14/2001
+                      usageEndDate: 02/14/2005
+                  birthDate: 01/01/1990
+                  gender: male
+                  telecom:
+                    email: john.payload1@example.com
+                    primaryEmail: john.primary@example.com
+                    personalEmail: john.personal@example.com
+                    ccEmail1: john.cc1@example.com
+                    ccEmail2: john.cc2@example.com
+                    cellPhone: '3055550111'
+                    homePhone: '3055550103'
+                    workPhone: '3055550104'
+                    fax: '3055550105'
+                  address:
+                    line:
+                    - Main Street 1
+                    - Suite 10
+                    city: Miami
+                    state: FL
+                    postalCode: '33101'
+                    country: United States
+                    county: Miami-Dade
+                  mailingAddress:
+                    line:
+                    - Billing Street 9
+                    - Floor 4
+                    city: Orlando
+                    state: FL
+                    postalCode: '32801'
+                    country: United States
+                    county: Orange
+                    province: N/A
+                  extension:
+                    employment:
+                      positionId: pos770
+                      departmentId: dep1
+                      hireDate: 06/15/2020
+                      terminationDate: 06/15/2025
+                    user:
+                      location: loc4857
+                      userType: admin
+                      password: <set-at-request-time>
+                      status: Active
+                      statusReason: Contracted
+                      ssn: '123456789'
+                      birthPlace:
+                        country: United States
+                        stateOther: Nuevo Leon
+                        city: Monterrey
+                      citizenship: United States
+                      raceEthnicity: Hispanic or Latino
+                      languages:
+                      - Spanish
+                      - French
+                      - German
+                      fnin:
+                        number: FNIN12
+                        countryIssue: United States
+                    provider:
+                      npiNumber: '1234567890'
+                      caqhId: '1234567890'
+                      caqhUsername: caqh_user
+                      caqhPassword: <set-at-request-time>
+                      caqhLastReattestationDate: 03/01/2026
+                      caqhEmail: caqh.provider@example.com
+                      treatsGender: Both
+                      patientAgeMinimum: 18
+                      patientAgeMaximum: 65
+                      upin: UPIN12
+      responses:
+        '200':
+          $ref: '#/components/responses/PractitionerCreated'
+        '201':
+          $ref: '#/components/responses/PractitionerCreated'
+        '400':
+          $ref: '#/components/responses/PractitionerBadRequest'
+        '401':
+          $ref: '#/components/responses/InvalidOrMissingApiKey'
+        '422':
+          $ref: '#/components/responses/PractitionerWriteValidationError'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    get:
+      tags:
+      - Practitioners
+      summary: Search practitioners
+      description: 'Returns a FHIR `Bundle` of practitioner resources. `_elements` supports
+
+        comma-separated selectors and may include nested paths such as
+
+        `telecom.email`, `telecom.homePhone`, `address.city`,
+
+        `extension.user.status`, `extension.user.statusReason`,
+
+        `extension.user.userType`, or `extension.provider.npiNumber`.
+
+
+        `_elements` values are normalized by trimming surrounding whitespace.
+
+        Unknown selectors are preserved in pagination links but ignored when
+
+        building each practitioner resource.
+
+        '
+      operationId: searchPractitioners
+      security:
+      - ApiKeyHeader: []
+      - BearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/SearchCount'
+      - $ref: '#/components/parameters/SearchPage'
+      - $ref: '#/components/parameters/SearchElements'
+      responses:
+        '200':
+          description: Practitioner search results
+          content:
+            application/fhir+json:
+              schema:
+                $ref: '#/components/schemas/PractitionerSearchBundle'
+              examples:
+                filtered:
+                  value:
+                    resourceType: Bundle
+                    type: searchset
+                    total: 3
+                    link:
+                    - relation: self
+                      url: /api/v1/practitioner?_count=2&_page=2&_elements=name%2Ctelecom.email%2Ctelecom.homePhone
+                    - relation: first
+                      url: /api/v1/practitioner?_count=2&_page=1&_elements=name%2Ctelecom.email%2Ctelecom.homePhone
+                    - relation: previous
+                      url: /api/v1/practitioner?_count=2&_page=1&_elements=name%2Ctelecom.email%2Ctelecom.homePhone
+                    - relation: last
+                      url: /api/v1/practitioner?_count=2&_page=2&_elements=name%2Ctelecom.email%2Ctelecom.homePhone
+                    entry:
+                    - resource:
+                        resourceType: Practitioner
+                        name:
+                          given: Katherine
+                          family: Johnson
+                        telecom:
+                          email: katherine@example.test
+                          homePhone: '3055550103'
+                full:
+                  value:
+                    resourceType: Bundle
+                    type: searchset
+                    total: 1
+                    link:
+                    - relation: self
+                      url: /api/v1/practitioner?_count=20&_page=1
+                    - relation: first
+                      url: /api/v1/practitioner?_count=20&_page=1
+                    - relation: last
+                      url: /api/v1/practitioner?_count=20&_page=1
+                    entry:
+                    - resource:
+                        resourceType: Practitioner
+                        id: PRAC-001
+                        name:
+                          given: Ada
+                          family: Lovelace
+                          middle: Byron
+                          other:
+                            given: Augusta
+                            middle: Ada
+                            family: King
+                            suffix: Countess
+                            usageStartDate: 02/14/2001
+                            usageEndDate: 02/14/2005
+                        telecom:
+                          email: ada@example.test
+                          primaryEmail: ada.primary@example.test
+                          personalEmail: ada.personal@example.test
+                          cellPhone: '3055550111'
+                          homePhone: '3055550103'
+                          workPhone: '3055550104'
+                          fax: '3055550105'
+                        birthDate: 01/01/1990
+                        gender: Female
+                        address:
+                          line:
+                          - Main Street 1
+                          - Suite 10
+                          city: Miami
+                          state: FL
+                          postalCode: '33101'
+                          country: United States
+                          county: Miami-Dade
+                        mailingAddress:
+                          line:
+                          - Billing Street 9
+                          - Floor 4
+                          city: Orlando
+                          state: FL
+                          postalCode: '32801'
+                          country: United States
+                          county: Orange
+                          province: N/A
+                        departments:
+                        - id: DEPT-091
+                          name: Mathematics
+                        position:
+                          id: POS-011
+                          name: Analyst
+                        locations:
+                        - id: LOC-420
+                          name: London Clinic
+                        divisions:
+                        - id: DIV-007
+                          name: Clinical Operations
+                        extension:
+                          user:
+                            status: Active
+                            statusReason: Contracted
+                            userType: admin
+                            location: LOC-420
+                          provider:
+                            npiNumber: '1234567890'
+                nestedElements:
+                  value:
+                    resourceType: Bundle
+                    type: searchset
+                    total: 1
+                    link:
+                    - relation: self
+                      url: /api/v1/practitioner?_count=20&_page=1&_elements=extension.user.status%2Cextension.user.statusReason%2Cextension.user.location%2Cextension.provider.npiNumber
+                    - relation: first
+                      url: /api/v1/practitioner?_count=20&_page=1&_elements=extension.user.status%2Cextension.user.statusReason%2Cextension.user.location%2Cextension.provider.npiNumber
+                    - relation: last
+                      url: /api/v1/practitioner?_count=20&_page=1&_elements=extension.user.status%2Cextension.user.statusReason%2Cextension.user.location%2Cextension.provider.npiNumber
+                    entry:
+                    - resource:
+                        resourceType: Practitioner
+                        extension:
+                          user:
+                            status: Active
+                            statusReason: Contracted
+                            location: 420
+                          provider:
+                            npiNumber: '1234567890'
+        '400':
+          $ref: '#/components/responses/PractitionerBadRequest'
+        '401':
+          $ref: '#/components/responses/InvalidOrMissingApiKey'
+        '422':
+          $ref: '#/components/responses/PractitionerReadValidationError'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /api/v1/practitioner/{publicId}:
+    get:
+      tags:
+      - Practitioners
+      summary: Get a practitioner by public ID
+      description: 'Returns a single practitioner resource. If `_elements` is omitted, the
+
+        full public practitioner resource is returned.
+
+        `_elements` accepts the same nested selector syntax as practitioner
+
+        search and trims surrounding whitespace before filtering.
+
+
+        A `404` response indicates the practitioner public ID could not be
+
+        resolved. A `422` response indicates validation failed while reading or
+
+        normalizing the upstream practitioner data.
+
+        '
+      operationId: getPractitioner
+      security:
+      - ApiKeyHeader: []
+      - BearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/PractitionerPublicId'
+      - $ref: '#/components/parameters/SearchElements'
+      responses:
+        '200':
+          description: Practitioner resource
+          content:
+            application/fhir+json:
+              schema:
+                $ref: '#/components/schemas/Practitioner'
+              examples:
+                filtered:
+                  value:
+                    resourceType: Practitioner
+                    name:
+                      given: Ada
+                      family: Lovelace
+                    telecom:
+                      email: ada@example.test
+                      homePhone: '3055550103'
+                default:
+                  value:
+                    resourceType: Practitioner
+                    id: PRAC-001
+                    name:
+                      given: Ada
+                      family: Lovelace
+                      middle: Byron
+                      other:
+                        given: Augusta
+                        middle: Ada
+                        family: King
+                        suffix: Countess
+                        usageStartDate: 02/14/2001
+                        usageEndDate: 02/14/2005
+                    birthDate: 01/01/1990
+                    gender: Female
+                    departments:
+                    - id: DEPT-091
+                      name: Mathematics
+                    position:
+                      id: POS-011
+                      name: Analyst
+                    locations:
+                    - id: LOC-420
+                      name: London Clinic
+                    divisions:
+                    - id: DIV-007
+                      name: Clinical Operations
+                    telecom:
+                      email: ada@example.test
+                      primaryEmail: ada.primary@example.test
+                      personalEmail: ada.personal@example.test
+                      cellPhone: '3055550111'
+                      homePhone: '3055550103'
+                      workPhone: '3055550104'
+                      fax: '3055550105'
+                    address:
+                      line:
+                      - Main Street 1
+                      - Suite 10
+                      city: Miami
+                      state: FL
+                      postalCode: '33101'
+                      country: United States
+                      county: Miami-Dade
+                    mailingAddress:
+                      line:
+                      - Billing Street 9
+                      - Floor 4
+                      city: Orlando
+                      state: FL
+                      postalCode: '32801'
+                      country: United States
+                      county: Orange
+                      province: N/A
+                    extension:
+                      user:
+                        status: Active
+                        statusReason: Contracted
+                        userType: admin
+                        location: LOC-420
+                      provider:
+                        npiNumber: '1234567890'
+                nestedElements:
+                  value:
+                    resourceType: Practitioner
+                    extension:
+                      user:
+                        status: Active
+                        statusReason: Contracted
+                        location: 420
+                      provider:
+                        npiNumber: '1234567890'
+        '400':
+          $ref: '#/components/responses/PractitionerBadRequest'
+        '401':
+          $ref: '#/components/responses/InvalidOrMissingApiKey'
+        '404':
+          $ref: '#/components/responses/PractitionerNotFound'
+        '422':
+          $ref: '#/components/responses/PractitionerReadValidationError'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+    put:
+      tags:
+      - Practitioners
+      summary: Update a practitioner
+      description: 'Updates a practitioner/provider profile identified by `publicId`.
+
+
+        The request body is a partial update: every top-level field is
+
+        optional. Omitted fields retain their existing values. Any field that
+
+        is present is validated with the same format/length/pattern rules as
+
+        the create payload.
+
+
+        A `422` response indicates either request-body validation failures,
+
+        unresolved related public IDs such as
+
+        `extension.employment.positionId`,
+
+        `extension.employment.departmentId`, or
+
+        `extension.user.location`, or a validation error returned by the
+
+        upstream provider-profile API.
+
+        '
+      operationId: updatePractitioner
+      security:
+      - ApiKeyHeader: []
+      - BearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/PractitionerPublicId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PractitionerUpdateRequest'
+            examples:
+              default:
+                value:
+                  resourceType: Practitioner
+                  name:
+                    given: John
+                    family: Doe
+                    middle: Allen
+                    other:
+                      given: Jonathan
+                      middle: Alpha
+                      family: Public
+                      suffix: III
+                      usageStartDate: 02/14/2001
+                      usageEndDate: 02/14/2005
+                  birthDate: 01/01/1990
+                  gender: male
+                  telecom:
+                    email: john.payload1@example.com
+                    primaryEmail: john.primary@example.com
+                    personalEmail: john.personal@example.com
+                    ccEmail1: john.cc1@example.com
+                    ccEmail2: john.cc2@example.com
+                    cellPhone: '3055550111'
+                    homePhone: '3055550103'
+                    workPhone: '3055550104'
+                    fax: '3055550105'
+                  address:
+                    line:
+                    - Main Street 1
+                    - Suite 10
+                    city: Miami
+                    state: FL
+                    postalCode: '33101'
+                    country: United States
+                    county: Miami-Dade
+                  mailingAddress:
+                    line:
+                    - Billing Street 9
+                    - Floor 4
+                    city: Orlando
+                    state: FL
+                    postalCode: '32801'
+                    country: United States
+                    county: Orange
+                    province: N/A
+                  extension:
+                    employment:
+                      positionId: pos770
+                      departmentId: dep1
+                      hireDate: 06/15/2020
+                      terminationDate: 06/15/2025
+                    user:
+                      location: loc4857
+                      userType: admin
+                      password: <set-at-request-time>
+                      status: Active
+                      statusReason: Contracted
+                      ssn: '123456789'
+                      birthPlace:
+                        country: United States
+                        stateOther: Nuevo Leon
+                        city: Monterrey
+                      citizenship: United States
+                      raceEthnicity: Hispanic or Latino
+                      languages:
+                      - Spanish
+                      - French
+                      - German
+                      fnin:
+                        number: FNIN12
+                        countryIssue: United States
+                    provider:
+                      npiNumber: '1234567890'
+                      caqhId: '1234567890'
+                      caqhUsername: caqh_user
+                      caqhPassword: <set-at-request-time>
+                      caqhLastReattestationDate: 03/01/2026
+                      caqhEmail: caqh.provider@example.com
+                      treatsGender: Both
+                      patientAgeMinimum: 18
+                      patientAgeMaximum: 65
+                      upin: UPIN12
+      responses:
+        '200':
+          $ref: '#/components/responses/PractitionerUpdated'
+        '400':
+          $ref: '#/components/responses/PractitionerBadRequest'
+        '401':
+          $ref: '#/components/responses/InvalidOrMissingApiKey'
+        '404':
+          $ref: '#/components/responses/PractitionerNotFound'
+        '422':
+          $ref: '#/components/responses/PractitionerWriteValidationError'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    patch:
+      tags:
+      - Practitioners
+      summary: Update a practitioner with PATCH
+      description: 'Accepts the same payload as `PUT` and is routed to the same update
+
+        handler. Both verbs behave as partial updates: send only the fields
+
+        you want to change.
+
+
+        A `422` response indicates either request-body validation failures,
+
+        unresolved related public IDs such as
+
+        `extension.employment.positionId`,
+
+        `extension.employment.departmentId`, or
+
+        `extension.user.location`, or a validation error returned by the
+
+        upstream provider-profile API.
+
+        '
+      operationId: patchPractitioner
+      security:
+      - ApiKeyHeader: []
+      - BearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/PractitionerPublicId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PractitionerUpdateRequest'
+            examples:
+              default:
+                value:
+                  resourceType: Practitioner
+                  name:
+                    given: John
+                    family: Doe
+                    middle: Allen
+                    other:
+                      given: Jonathan
+                      middle: Alpha
+                      family: Public
+                      suffix: III
+                      usageStartDate: 02/14/2001
+                      usageEndDate: 02/14/2005
+                  birthDate: 01/01/1990
+                  gender: male
+                  telecom:
+                    email: john.payload1@example.com
+                    primaryEmail: john.primary@example.com
+                    personalEmail: john.personal@example.com
+                    ccEmail1: john.cc1@example.com
+                    ccEmail2: john.cc2@example.com
+                    cellPhone: '3055550111'
+                    homePhone: '3055550103'
+                    workPhone: '3055550104'
+                    fax: '3055550105'
+                  address:
+                    line:
+                    - Main Street 1
+                    - Suite 10
+                    city: Miami
+                    state: FL
+                    postalCode: '33101'
+                    country: United States
+                    county: Miami-Dade
+                  mailingAddress:
+                    line:
+                    - Billing Street 9
+                    - Floor 4
+                    city: Orlando
+                    state: FL
+                    postalCode: '32801'
+                    country: United States
+                    county: Orange
+                    province: N/A
+                  extension:
+                    employment:
+                      positionId: pos770
+                      departmentId: dep1
+                      hireDate: 06/15/2020
+                      terminationDate: 06/15/2025
+                    user:
+                      location: loc4857
+                      userType: admin
+                      password: <set-at-request-time>
+                      status: Active
+                      statusReason: Contracted
+                      ssn: '123456789'
+                      birthPlace:
+                        country: United States
+                        stateOther: Nuevo Leon
+                        city: Monterrey
+                      citizenship: United States
+                      raceEthnicity: Hispanic or Latino
+                      languages:
+                      - Spanish
+                      - French
+                      - German
+                      fnin:
+                        number: FNIN12
+                        countryIssue: United States
+                    provider:
+                      npiNumber: '1234567890'
+                      caqhId: '1234567890'
+                      caqhUsername: caqh_user
+                      caqhPassword: <set-at-request-time>
+                      caqhLastReattestationDate: 03/01/2026
+                      caqhEmail: caqh.provider@example.com
+                      treatsGender: Both
+                      patientAgeMinimum: 18
+                      patientAgeMaximum: 65
+                      upin: UPIN12
+      responses:
+        '200':
+          $ref: '#/components/responses/PractitionerUpdated'
+        '400':
+          $ref: '#/components/responses/PractitionerBadRequest'
+        '401':
+          $ref: '#/components/responses/InvalidOrMissingApiKey'
+        '404':
+          $ref: '#/components/responses/PractitionerNotFound'
+        '422':
+          $ref: '#/components/responses/PractitionerWriteValidationError'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+components:
+  schemas:
+    PractitionerLinkedResource:
+      type: object
+      additionalProperties: false
+      description: Related practitioner resource. `name` may be absent when it is not available.
+      required:
+      - id
+      properties:
+        id:
+          type: string
+          example: LOC-420
+        name:
+          type: string
+          example: London Clinic
+    PractitionerWriteMailingAddress:
+      type: object
+      description: "Optional mailing address payload.\n\nThe server enforces:\n  - a character allowlist regex `^[A-Za-z0-9 .'\\-]+$` on `line[0]`,\n    `line[1]`, and `city`\n  - `maxLength: 100` on `county` and `province`\n"
+      properties:
+        line:
+          type: array
+          maxItems: 2
+          items:
+            type: string
+            minLength: 1
+            maxLength: 150
+        city:
+          type: string
+          minLength: 1
+          maxLength: 50
+        state:
+          type: string
+          minLength: 1
+          maxLength: 50
+        postalCode:
+          type: string
+          minLength: 5
+          maxLength: 5
+          pattern: ^\d{5}$
+          description: Exactly 5 digits.
+        country:
+          type: string
+          minLength: 1
+        county:
+          type: string
+          minLength: 1
+          maxLength: 100
+        province:
+          type: string
+          minLength: 1
+          maxLength: 100
+    PractitionerSearchEntry:
+      type: object
+      additionalProperties: false
+      required:
+      - resource
+      properties:
+        resource:
+          $ref: '#/components/schemas/Practitioner'
+    PractitionerWriteProviderExtension:
+      type: object
+      description: 'Optional provider extension payload.
+
+        '
+      properties:
+        npiNumber:
+          type: string
+          minLength: 10
+          maxLength: 10
+          pattern: ^\d{10}$
+        caqhId:
+          type: string
+          minLength: 1
+          maxLength: 12
+        caqhUsername:
+          type: string
+          minLength: 1
+          maxLength: 50
+        caqhPassword:
+          type: string
+          minLength: 1
+          maxLength: 50
+        caqhLastReattestationDate:
+          $ref: '#/components/schemas/MmDdYyyyDateString'
+        caqhEmail:
+          type: string
+          minLength: 1
+          format: email
+        treatsGender:
+          type: string
+          minLength: 1
+          description: Accepted values are `Male only`, `Female only`, and `Both`.
+          enum:
+          - Male only
+          - Female only
+          - Both
+        patientAgeMinimum:
+          anyOf:
+          - type: integer
+            minimum: 0
+            maximum: 100
+          - type: string
+            pattern: ^\d+$
+            description: Numeric string representing an integer between 0 and 100 inclusive.
+          description: Must be an integer (or numeric string) in the range `[0, 100]`. Booleans and non-numeric strings are rejected.
+        patientAgeMaximum:
+          anyOf:
+          - type: integer
+            minimum: 0
+            maximum: 100
+          - type: string
+            pattern: ^\d+$
+            description: Numeric string representing an integer between 0 and 100 inclusive.
+          description: Must be an integer (or numeric string) in the range `[0, 100]`. Booleans and non-numeric strings are rejected.
+        upin:
+          type: string
+          minLength: 1
+          maxLength: 6
+          pattern: ^[A-Za-z0-9 .'\-]+$
+          description: Only letters, numbers, spaces, apostrophes, periods, and hyphens are allowed.
+    PractitionerName:
+      type: object
+      properties:
+        given:
+          type: string
+          example: Ada
+        family:
+          type: string
+          example: Lovelace
+        middle:
+          type: string
+        other:
+          type: object
+    PractitionerMailingAddress:
+      type: object
+      properties:
+        line:
+          type: array
+          items:
+            type: string
+        city:
+          type: string
+        state:
+          type: string
+        postalCode:
+          type: string
+        country:
+          type: string
+        county:
+          type: string
+        province:
+          type: string
+    PractitionerHomeAddress:
+      type: object
+      properties:
+        line:
+          type: array
+          items:
+            type: string
+        city:
+          type: string
+        state:
+          type: string
+        postalCode:
+          type: string
+        country:
+          type: string
+        county:
+          type: string
+    PractitionerWriteRequest:
+      type: object
+      description: 'Practitioner create payload. `name`, `telecom`, and `extension` are required objects, and each nested required field documented below must be supplied.
+
+
+        Unknown top-level properties are silently ignored by the server.
+
+        The practitioner public ID is generated by the backing service and returned in the create success response. Client-supplied top-level `id` values are ignored.
+
+        '
+      required:
+      - name
+      - telecom
+      - extension
+      properties:
+        resourceType:
+          type: string
+          pattern: ^\s*Practitioner\s*$
+          description: Optional resource type discriminator. When present it must equal `Practitioner`.
+          example: Practitioner
+        name:
+          $ref: '#/components/schemas/PractitionerWriteName'
+        birthDate:
+          $ref: '#/components/schemas/MmDdYyyyDateString'
+        gender:
+          type: string
+          minLength: 1
+          maxLength: 100
+          pattern: ^[A-Za-z0-9 .'\-]+$
+          description: Only letters, numbers, spaces, apostrophes, periods, and hyphens are allowed. Maximum 100 characters.
+          example: male
+        telecom:
+          $ref: '#/components/schemas/PractitionerWriteTelecom'
+        address:
+          $ref: '#/components/schemas/PractitionerWriteHomeAddress'
+        mailingAddress:
+          $ref: '#/components/schemas/PractitionerWriteMailingAddress'
+        extension:
+          $ref: '#/components/schemas/PractitionerWriteExtension'
+    PractitionerWriteEmploymentExtension:
+      type: object
+      description: 'Required employment extension payload.
+
+
+        Any other properties under `extension.employment` are silently accepted, with three exceptions: `extension.employment.employeeCategoryId`, `extension.employment.deactivatedDate`, and the legacy `extension.employment.statusId` field are explicitly rejected.
+
+        '
+      required:
+      - positionId
+      - departmentId
+      properties:
+        positionId:
+          anyOf:
+          - type: string
+            maxLength: 50
+          - type: number
+          - type: boolean
+          description: Scalar identifier; when sent as a string it is capped at 50 characters.
+          example: pos770
+        departmentId:
+          anyOf:
+          - type: string
+            maxLength: 50
+          - type: number
+          - type: boolean
+          description: Scalar identifier; when sent as a string it is capped at 50 characters.
+          example: dep1
+        hireDate:
+          $ref: '#/components/schemas/MmDdYyyyDateString'
+        terminationDate:
+          $ref: '#/components/schemas/MmDdYyyyDateString'
+    PractitionerWriteBirthPlace:
+      type: object
+      properties:
+        country:
+          type: string
+          minLength: 1
+        stateOther:
+          type: string
+          minLength: 1
+          maxLength: 255
+        city:
+          type: string
+          minLength: 1
+          maxLength: 60
+          pattern: ^[A-Za-z0-9 .'\-]+$
+          description: Only letters, numbers, spaces, apostrophes, periods, and hyphens are allowed.
+    Practitioner:
+      type: object
+      required:
+      - resourceType
+      properties:
+        resourceType:
+          type: string
+          const: Practitioner
+        id:
+          type:
+          - string
+          - 'null'
+          example: PRAC-001
+        name:
+          $ref: '#/components/schemas/PractitionerName'
+        telecom:
+          $ref: '#/components/schemas/PractitionerTelecom'
+        birthDate:
+          anyOf:
+          - $ref: '#/components/schemas/MmDdYyyyDateString'
+          - type: 'null'
+        gender:
+          type: string
+        address:
+          $ref: '#/components/schemas/PractitionerHomeAddress'
+        mailingAddress:
+          $ref: '#/components/schemas/PractitionerMailingAddress'
+        departments:
+          type: array
+          items:
+            $ref: '#/components/schemas/PractitionerLinkedResource'
+        position:
+          $ref: '#/components/schemas/PractitionerLinkedResource'
+        locations:
+          type: array
+          items:
+            $ref: '#/components/schemas/PractitionerLinkedResource'
+        divisions:
+          type: array
+          items:
+            $ref: '#/components/schemas/PractitionerLinkedResource'
+        extension:
+          type: object
+          description: "Nested extension data may be filtered with `_elements` selectors such as\n`extension.user.status`, `extension.user.statusReason`,\n`extension.user.userType`, or `extension.provider.npiNumber`.\n\nSome fields within `extension` have a known, constrained value set:\n\n  - `extension.user.userType` — always one of `admin`, `super_admin`,\n    or `student`. If no supported value is available, the field is\n    omitted from the response.\n  - `extension.user.status` — always one of `Inactive`, `Active`,\n    or `Deactivated` when present.\n  - `extension.user.statusReason` — exposed as a human-readable\n    status reason string when present.\n  - `extension.provider.treatsGender` — when present, always one of\n    `Male only`, `Female only`, or `Both`.\n\nPractitioner category data is exposed through the dedicated\npractitioner-category endpoints rather than embedded in the public\npractitioner response.\n"
+    PractitionerWriteUserExtension:
+      type: object
+      description: 'Required user extension payload.
+
+
+        Practitioner status lives here as well: `status` and `statusReason`
+
+        are part of `extension.user`.
+
+        '
+      required:
+      - location
+      - userType
+      - password
+      properties:
+        location:
+          anyOf:
+          - type: string
+            maxLength: 50
+          - type: number
+          - type: boolean
+          description: Scalar identifier; when sent as a string it is capped at 50 characters.
+          example: loc4857
+        userType:
+          type: string
+          enum:
+          - admin
+          - super_admin
+          - student
+          description: Public practitioner role.
+          example: admin
+        status:
+          type: string
+          enum:
+          - Active
+          - Inactive
+          - Deactivated
+          description: 'Optional practitioner user status. Matching is case-insensitive, but values must preserve spaces exactly.
+
+            Use `statusReason` with `Deactivated`. On create, omit both fields to use the API defaults.
+
+            '
+          example: Active
+        statusReason:
+          type: string
+          enum:
+          - Contracted
+          - Independent
+          - Other
+          - On Leave
+          - Prospect
+          - Deceased
+          - Resigned
+          - Retired
+          - Terminated
+          description: 'Optional practitioner user status reason. Matching is case-insensitive and the allowed value set depends on `status`.
+
+            Omit this field when there is no reason; do not send `null`. A deactivated status must include a valid reason.
+
+
+            Allowed combinations:
+
+            - `Active`: `Contracted`, `Independent`, `Other`
+
+            - `Inactive`: `On Leave`, `Prospect`, `Other`
+
+            - `Deactivated`: `Deceased`, `Resigned`, `Retired`, `Terminated`, `Other`
+
+            '
+          example: Contracted
+        password:
+          type: string
+          minLength: 12
+          maxLength: 51
+          example: <set-at-request-time>
+          description: "Password required for the user account. Required on create;\noptional on update (omit it to leave the stored password unchanged).\n\nWhen present, the following complexity rules are enforced:\n  - at least one uppercase letter\n  - at least one lowercase letter\n  - at least one digit\n  - at least one special character (any non-alphanumeric ASCII character, including punctuation)\n  - must not contain the submitted `telecom.email`, `name.given`, or `name.family` as a case-insensitive substring\n"
+        ssn:
+          type: string
+          minLength: 9
+          maxLength: 9
+          pattern: ^\d{9}$
+        birthPlace:
+          $ref: '#/components/schemas/PractitionerWriteBirthPlace'
+        citizenship:
+          type: string
+          minLength: 1
+        raceEthnicity:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Accepted values are `American Indian or Alaska Native`, `Asian`, `Black or African American`, `Hispanic or Latino`, `Native Hawaiian or Other Pacific Islander`, `White`, `Prefer Not to Say`, and `Other`.
+          enum:
+          - American Indian or Alaska Native
+          - Asian
+          - Black or African American
+          - Hispanic or Latino
+          - Native Hawaiian or Other Pacific Islander
+          - White
+          - Prefer Not to Say
+          - Other
+        languages:
+          type: array
+          maxItems: 3
+          description: Up to three additional languages. Each entry allows only letters, numbers, spaces, apostrophes, periods, and hyphens.
+          items:
+            type: string
+            minLength: 1
+            maxLength: 100
+            pattern: ^[A-Za-z0-9 .'\-]+$
+        fnin:
+          $ref: '#/components/schemas/PractitionerWriteFnin'
+    PractitionerSearchBundle:
+      type: object
+      additionalProperties: false
+      required:
+      - resourceType
+      - type
+      - total
+      - link
+      - entry
+      properties:
+        resourceType:
+          type: string
+          const: Bundle
+        type:
+          type: string
+          const: searchset
+        total:
+          type: integer
+          minimum: 0
+        link:
+          type: array
+          items:
+            $ref: '#/components/schemas/BundleLink'
+        entry:
+          type: array
+          items:
+            $ref: '#/components/schemas/PractitionerSearchEntry'
+    MmDdYyyyDateString:
+      type: string
+      pattern: ^(0[1-9]|1[0-2])/(0[1-9]|[12][0-9]|3[01])/[0-9]{4}$
+      description: 'Date string in `MM/DD/YYYY` format.
+
+
+        The value must represent a real calendar date accepted by server-side
+
+        validation, not just a string that matches the pattern. For example,
+
+        `02/31/2026` is rejected.
+
+        '
+      example: 01/31/2026
+    OperationOutcomeIssue:
+      type: object
+      additionalProperties: false
+      required:
+      - severity
+      - code
+      - details
+      properties:
+        severity:
+          type: string
+          enum:
+          - fatal
+          - error
+          - warning
+          - information
+        code:
+          type: string
+          example: invalid
+        details:
+          $ref: '#/components/schemas/OperationOutcomeDetails'
+        expression:
+          type: array
+          items:
+            type: string
+    PractitionerUpdateUserExtension:
+      type: object
+      description: 'User extension payload for partial updates. All fields are optional —
+
+        send only the fields you want to change. Omit `password` to leave the
+
+        stored password unchanged.
+
+
+        Practitioner status lives here as well: `status` and `statusReason`
+
+        are part of `extension.user`.
+
+        '
+      properties:
+        location:
+          anyOf:
+          - type: string
+            maxLength: 50
+          - type: number
+          - type: boolean
+          description: Scalar identifier; when sent as a string it is capped at 50 characters.
+          example: loc4857
+        userType:
+          type: string
+          enum:
+          - admin
+          - super_admin
+          - student
+          description: Public practitioner role.
+          example: admin
+        status:
+          type: string
+          enum:
+          - Active
+          - Inactive
+          - Deactivated
+          description: 'Optional practitioner user status for updates. Matching is case-insensitive, but values must preserve spaces exactly.
+
+            If transitioning to `Deactivated`, send `statusReason` in the same request.
+
+            '
+          example: Deactivated
+        statusReason:
+          type: string
+          enum:
+          - Contracted
+          - Independent
+          - Other
+          - On Leave
+          - Prospect
+          - Deceased
+          - Resigned
+          - Retired
+          - Terminated
+          description: 'Optional practitioner user status reason for updates. Matching is case-insensitive and the allowed value set depends on `status`.
+
+            Omit this field when there is no reason; do not send `null`. A deactivation update must provide a valid reason.
+
+
+            Allowed combinations:
+
+            - `Active`: `Contracted`, `Independent`, `Other`
+
+            - `Inactive`: `On Leave`, `Prospect`, `Other`
+
+            - `Deactivated`: `Deceased`, `Resigned`, `Retired`, `Terminated`, `Other`
+
+            '
+          example: Terminated
+        password:
+          type: string
+          minLength: 12
+          maxLength: 51
+          example: <set-at-request-time>
+          description: "New password. Optional on update — omit to leave the stored password\nunchanged.\n\nWhen present, the following complexity rules are enforced:\n  - at least one uppercase letter\n  - at least one lowercase letter\n  - at least one digit\n  - at least one special character (any non-alphanumeric ASCII character, including punctuation)\n  - must not contain the submitted `telecom.email`, `name.given`, or `name.family` as a case-insensitive substring\n"
+        ssn:
+          type: string
+          minLength: 9
+          maxLength: 9
+          pattern: ^\d{9}$
+        birthPlace:
+          $ref: '#/components/schemas/PractitionerWriteBirthPlace'
+        citizenship:
+          type: string
+          minLength: 1
+        raceEthnicity:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Accepted values are `American Indian or Alaska Native`, `Asian`, `Black or African American`, `Hispanic or Latino`, `Native Hawaiian or Other Pacific Islander`, `White`, `Prefer Not to Say`, and `Other`.
+          enum:
+          - American Indian or Alaska Native
+          - Asian
+          - Black or African American
+          - Hispanic or Latino
+          - Native Hawaiian or Other Pacific Islander
+          - White
+          - Prefer Not to Say
+          - Other
+        languages:
+          type: array
+          maxItems: 3
+          description: Up to three additional languages. Each entry allows only letters, numbers, spaces, apostrophes, periods, and hyphens.
+          items:
+            type: string
+            minLength: 1
+            maxLength: 100
+            pattern: ^[A-Za-z0-9 .'\-]+$
+        fnin:
+          $ref: '#/components/schemas/PractitionerWriteFnin'
+    PractitionerTelecom:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          example: ada@example.test
+        primaryEmail:
+          type: string
+          format: email
+        personalEmail:
+          type: string
+          format: email
+        cellPhone:
+          type: string
+        homePhone:
+          type: string
+        workPhone:
+          type: string
+        fax:
+          type: string
+    PractitionerWriteExtension:
+      type: object
+      description: Practitioner extension payload. `employment` and `user` are required.
+      required:
+      - employment
+      - user
+      properties:
+        employment:
+          $ref: '#/components/schemas/PractitionerWriteEmploymentExtension'
+        user:
+          $ref: '#/components/schemas/PractitionerWriteUserExtension'
+        provider:
+          $ref: '#/components/schemas/PractitionerWriteProviderExtension'
+    PractitionerUpdateRequest:
+      type: object
+      description: 'Practitioner update payload. Every top-level field is optional — send only
+
+        the fields you want to change. Any field that is present is validated with
+
+        the same format/length/pattern rules as the create payload. Fields that
+
+        are omitted keep their previous values.
+
+
+        Unknown top-level properties are silently ignored by the server.
+
+        '
+      properties:
+        resourceType:
+          type: string
+          pattern: ^\s*Practitioner\s*$
+          description: Optional resource type discriminator. When present it must equal `Practitioner`.
+          example: Practitioner
+        name:
+          $ref: '#/components/schemas/PractitionerUpdateName'
+        birthDate:
+          $ref: '#/components/schemas/MmDdYyyyDateString'
+        gender:
+          type: string
+          minLength: 1
+          maxLength: 100
+          pattern: ^[A-Za-z0-9 .'\-]+$
+          description: Only letters, numbers, spaces, apostrophes, periods, and hyphens are allowed. Maximum 100 characters.
+          example: male
+        telecom:
+          $ref: '#/components/schemas/PractitionerUpdateTelecom'
+        address:
+          $ref: '#/components/schemas/PractitionerWriteHomeAddress'
+        mailingAddress:
+          $ref: '#/components/schemas/PractitionerWriteMailingAddress'
+        extension:
+          $ref: '#/components/schemas/PractitionerUpdateExtension'
+    PractitionerUpdateExtension:
+      type: object
+      description: 'Practitioner extension payload for partial updates. All nested objects
+
+        and their fields are optional — send only the pieces you want to change.
+
+
+        The practitioner user status fields are nested under `extension.user`.
+
+        '
+      properties:
+        employment:
+          $ref: '#/components/schemas/PractitionerUpdateEmploymentExtension'
+        user:
+          $ref: '#/components/schemas/PractitionerUpdateUserExtension'
+        provider:
+          $ref: '#/components/schemas/PractitionerWriteProviderExtension'
+    PractitionerWriteTelecom:
+      type: object
+      description: 'Practitioner telecom payload.
+
+
+        `email` is required. Any provided string must contain at least one
+
+        non-whitespace character.
+
+        '
+      required:
+      - email
+      properties:
+        email:
+          type: string
+          minLength: 1
+          format: email
+          example: john.payload1@example.com
+        primaryEmail:
+          type: string
+          minLength: 1
+          format: email
+        personalEmail:
+          type: string
+          minLength: 1
+          format: email
+        ccEmail1:
+          type: string
+          minLength: 1
+          format: email
+        ccEmail2:
+          type: string
+          minLength: 1
+          format: email
+        cellPhone:
+          type: string
+          minLength: 1
+          pattern: ^\d{10}$
+          description: 10 digit cell phone number.
+        homePhone:
+          type: string
+          minLength: 1
+          pattern: ^\d{10}$
+          description: 10 digit home phone number.
+        workPhone:
+          type: string
+          minLength: 1
+          pattern: ^\d{10}$
+          description: 10 digit work phone number.
+        fax:
+          type: string
+          minLength: 1
+          pattern: ^\d{10}$
+          description: 10 digit fax number.
+    PractitionerUpdateName:
+      type: object
+      description: 'Practitioner name payload for partial updates. All fields are optional —
+
+        send only the fields you want to change.
+
+
+        Every string field below is constrained to letters, numbers, spaces,
+
+        apostrophes, periods, and hyphens. The character allowlist regex
+
+        enforced server-side is `^[A-Za-z0-9 .''\-]+$`. Length limits enforced
+
+        by request validation: `given`/`family` 255, `middle` 100,
+
+        `other.given`/`other.middle`/`other.family` 100, and `other.suffix` 20.
+
+        '
+      properties:
+        given:
+          type: string
+          minLength: 1
+          maxLength: 255
+          pattern: ^[A-Za-z0-9 .'\-]+$
+          example: John
+        family:
+          type: string
+          minLength: 1
+          maxLength: 255
+          pattern: ^[A-Za-z0-9 .'\-]+$
+          example: Doe
+        middle:
+          type: string
+          minLength: 1
+          maxLength: 100
+          pattern: ^[A-Za-z0-9 .'\-]+$
+          example: Allen
+        other:
+          type: object
+          properties:
+            given:
+              type: string
+              minLength: 1
+              maxLength: 100
+              pattern: ^[A-Za-z0-9 .'\-]+$
+            middle:
+              type: string
+              minLength: 1
+              maxLength: 100
+              pattern: ^[A-Za-z0-9 .'\-]+$
+            family:
+              type: string
+              minLength: 1
+              maxLength: 100
+              pattern: ^[A-Za-z0-9 .'\-]+$
+            suffix:
+              type: string
+              minLength: 1
+              maxLength: 20
+              pattern: ^[A-Za-z0-9 .'\-]+$
+            usageStartDate:
+              $ref: '#/components/schemas/MmDdYyyyDateString'
+            usageEndDate:
+              $ref: '#/components/schemas/MmDdYyyyDateString'
+    OperationOutcome:
+      type: object
+      additionalProperties: false
+      required:
+      - resourceType
+      - issue
+      properties:
+        resourceType:
+          type: string
+          const: OperationOutcome
+        issue:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/OperationOutcomeIssue'
+    BundleLink:
+      type: object
+      additionalProperties: false
+      required:
+      - relation
+      - url
+      properties:
+        relation:
+          type: string
+          enum:
+          - self
+          - first
+          - previous
+          - next
+          - last
+        url:
+          type: string
+          format: uri
+    PractitionerWriteFnin:
+      type: object
+      properties:
+        number:
+          type: string
+          minLength: 1
+          maxLength: 20
+          pattern: ^[A-Za-z0-9 .'\-]+$
+          description: Only letters, numbers, spaces, apostrophes, periods, and hyphens are allowed.
+        countryIssue:
+          type: string
+          minLength: 1
+    PractitionerUpdateEmploymentExtension:
+      type: object
+      description: 'Employment extension payload for partial updates. All fields are optional —
+
+        send only the fields you want to change.
+
+
+        Any other properties under `extension.employment` are silently accepted, with three exceptions: `extension.employment.employeeCategoryId`, `extension.employment.deactivatedDate`, and the legacy `extension.employment.statusId` field are explicitly rejected.
+
+        '
+      properties:
+        positionId:
+          anyOf:
+          - type: string
+            maxLength: 50
+          - type: number
+          - type: boolean
+          description: Scalar identifier; when sent as a string it is capped at 50 characters.
+          example: pos770
+        departmentId:
+          anyOf:
+          - type: string
+            maxLength: 50
+          - type: number
+          - type: boolean
+          description: Scalar identifier; when sent as a string it is capped at 50 characters.
+          example: dep1
+        hireDate:
+          $ref: '#/components/schemas/MmDdYyyyDateString'
+        terminationDate:
+          $ref: '#/components/schemas/MmDdYyyyDateString'
+    PractitionerWriteName:
+      type: object
+      description: 'Practitioner name payload.
+
+
+        `given` and `family` are required. Any provided string must contain at
+
+        least one non-whitespace character.
+
+
+        Every string field below is constrained to letters, numbers, spaces,
+
+        apostrophes, periods, and hyphens. The character allowlist regex
+
+        enforced server-side is `^[A-Za-z0-9 .''\-]+$`. Length limits enforced
+
+        by request validation: `given`/`family` 255, `middle` 100,
+
+        `other.given`/`other.middle`/`other.family` 100, and `other.suffix` 20.
+
+        '
+      required:
+      - given
+      - family
+      properties:
+        given:
+          type: string
+          minLength: 1
+          maxLength: 255
+          pattern: ^[A-Za-z0-9 .'\-]+$
+          example: John
+        family:
+          type: string
+          minLength: 1
+          maxLength: 255
+          pattern: ^[A-Za-z0-9 .'\-]+$
+          example: Doe
+        middle:
+          type: string
+          minLength: 1
+          maxLength: 100
+          pattern: ^[A-Za-z0-9 .'\-]+$
+          example: Allen
+        other:
+          type: object
+          properties:
+            given:
+              type: string
+              minLength: 1
+              maxLength: 100
+              pattern: ^[A-Za-z0-9 .'\-]+$
+            middle:
+              type: string
+              minLength: 1
+              maxLength: 100
+              pattern: ^[A-Za-z0-9 .'\-]+$
+            family:
+              type: string
+              minLength: 1
+              maxLength: 100
+              pattern: ^[A-Za-z0-9 .'\-]+$
+            suffix:
+              type: string
+              minLength: 1
+              maxLength: 20
+              pattern: ^[A-Za-z0-9 .'\-]+$
+            usageStartDate:
+              $ref: '#/components/schemas/MmDdYyyyDateString'
+            usageEndDate:
+              $ref: '#/components/schemas/MmDdYyyyDateString'
+    PractitionerUpdateTelecom:
+      type: object
+      description: 'Practitioner telecom payload for partial updates. All fields are optional —
+
+        send only the fields you want to change. Any provided string must contain
+
+        at least one non-whitespace character.
+
+        '
+      properties:
+        email:
+          type: string
+          minLength: 1
+          format: email
+          example: john.payload1@example.com
+        primaryEmail:
+          type: string
+          minLength: 1
+          format: email
+        personalEmail:
+          type: string
+          minLength: 1
+          format: email
+        ccEmail1:
+          type: string
+          minLength: 1
+          format: email
+        ccEmail2:
+          type: string
+          minLength: 1
+          format: email
+        cellPhone:
+          type: string
+          minLength: 1
+          pattern: ^\d{10}$
+          description: 10 digit cell phone number.
+        homePhone:
+          type: string
+          minLength: 1
+          pattern: ^\d{10}$
+          description: 10 digit home phone number.
+        workPhone:
+          type: string
+          minLength: 1
+          pattern: ^\d{10}$
+          description: 10 digit work phone number.
+        fax:
+          type: string
+          minLength: 1
+          pattern: ^\d{10}$
+          description: 10 digit fax number.
+    OperationOutcomeDetails:
+      type: object
+      additionalProperties: false
+      required:
+      - text
+      properties:
+        text:
+          type: string
+        id:
+          type: string
+    PractitionerWriteHomeAddress:
+      type: object
+      description: 'Optional home address payload.
+
+        '
+      properties:
+        line:
+          type: array
+          maxItems: 2
+          items:
+            type: string
+            minLength: 1
+            maxLength: 150
+        city:
+          type: string
+          minLength: 1
+          maxLength: 50
+        state:
+          type: string
+          minLength: 1
+          maxLength: 50
+        postalCode:
+          type: string
+          minLength: 5
+          maxLength: 5
+          pattern: ^\d{5}$
+          description: Exactly 5 digits.
+        country:
+          type: string
+          minLength: 1
+        county:
+          type: string
+          minLength: 1
+          maxLength: 100
+  responses:
+    ValidationError:
+      description: Request validation failed
+      content:
+        application/fhir+json:
+          schema:
+            $ref: '#/components/schemas/OperationOutcome'
+          examples:
+            invalidIntegerQuery:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: This value should be of type integer.
+                  expression:
+                  - _count
+            invalidPageLowerBound:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: Field '_page' must be greater than 0
+                  expression:
+                  - _page
+            invalidElementsType:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: Field '_elements' must be a comma-separated string
+                  expression:
+                  - _elements
+            missingName:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: The Location.name field is required.
+                  expression:
+                  - name
+            missingDivisionName:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: The Division.name field is required.
+                  expression:
+                  - name
+            missingDivisionLocations:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: Field 'locations' is required and must contain at least one location ID string
+                  expression:
+                  - locations
+            invalidLocations:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: Field 'locations' must be an array of non-blank location ID strings
+                  expression:
+                  - locations[1]
+            divisionNameTooLong:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: Field 'name' must be 100 characters or fewer
+                  expression:
+                  - name
+            duplicateDivisionName:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: This division already exists for this company.
+                  expression:
+                  - name
+            divisionLocationsNotFound:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: All locations must exist and belong to the company.
+                  expression:
+                  - locations
+            divisionLocationsAssigned:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: Locations already assigned to another division must first belong to the Default division.
+                  expression:
+                  - locations
+            emptyDivisionUpdatePayload:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: At least one of 'name' or 'locations' must be provided.
+                  expression:
+                  - name
+                  - locations
+            missingState:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: Field 'state' is required and must be a non-blank string
+                  expression:
+                  - state
+            invalidDivisionReference:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: Field 'division.reference' must be a non-blank string
+                  expression:
+                  - division[reference]
+            practitionerResourceType:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: Field 'resourceType' must equal "Practitioner"
+                  expression:
+                  - resourceType
+            practitionerBirthDateFormat:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: Field 'birthDate' must use MM/DD/YYYY format
+                  expression:
+                  - birthDate
+            practitionerMissingRequiredNestedField:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: The Practitioner.telecom.email field is required.
+                  expression:
+                  - telecom.email
+            practitionerInvalidScalar:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: This value should be of type scalar.
+                  expression:
+                  - extension.user.location
+            practitionerInvalidStatus:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: 'Status must be one of: Active, Inactive, or Deactivated.'
+                  expression:
+                  - extension.user.status
+            practitionerInvalidActiveStatusReason:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: 'Status Reason must be one of: Contracted, Independent, Other for status Active.'
+                  expression:
+                  - extension.user.statusReason
+            practitionerInvalidInactiveStatusReason:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: 'Status Reason must be one of: On Leave, Prospect, Other for status Inactive.'
+                  expression:
+                  - extension.user.statusReason
+            practitionerInvalidDeactivatedStatusReason:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: 'Status Reason must be one of: Deceased, Resigned, Retired, Terminated, Other for status Deactivated.'
+                  expression:
+                  - extension.user.statusReason
+            practitionerIncompatibleStatusReason:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: Status Reason "Terminated" is not valid for status "Active".
+                  expression:
+                  - extension.user.statusReason
+            practitionerMissingDeactivatedStatusReason:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: Status Reason is required when status is Deactivated.
+                  expression:
+                  - extension.user.statusReason
+            practitionerCreateMultipleIssues:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: The Practitioner.name.given field is required.
+                  expression:
+                  - name.given
+                - severity: error
+                  code: invalid
+                  details:
+                    text: The Practitioner.extension.employment.positionId field is required.
+                  expression:
+                  - extension.employment.positionId
+                - severity: error
+                  code: invalid
+                  details:
+                    text: The Practitioner.extension.user.location field is required.
+                  expression:
+                  - extension.user.location
+            practitionerUnsupportedWriteField:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: Field 'extension.employment.employeeCategoryId' is not supported.
+                  expression:
+                  - extension.employment.employeeCategoryId
+            practitionerInvalidDepartmentReference:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: One or more department ids could not be resolved.
+                  expression:
+                  - extension.employment.departmentId
+            practitionerInvalidLocationReference:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: One or more location ids could not be resolved.
+                  expression:
+                  - extension.user.location
+    PractitionerBadRequest:
+      description: Practitioner request could not be processed
+      content:
+        application/fhir+json:
+          schema:
+            $ref: '#/components/schemas/OperationOutcome'
+          examples:
+            invalidJson:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: Request payload contains invalid "json" data.
+            companyNotFound:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: Company not found
+                  expression:
+                  - company
+    PractitionerReadValidationError:
+      description: Practitioner read validation failed
+      content:
+        application/fhir+json:
+          schema:
+            $ref: '#/components/schemas/OperationOutcome'
+          examples:
+            invalidIntegerQuery:
+              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/invalidIntegerQuery'
+            invalidPageLowerBound:
+              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/invalidPageLowerBound'
+            invalidElementsType:
+              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/invalidElementsType'
+    PractitionerUpdated:
+      description: Practitioner updated successfully
+      content:
+        application/fhir+json:
+          schema:
+            $ref: '#/components/schemas/OperationOutcome'
+          examples:
+            default:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: information
+                  code: informational
+                  details:
+                    text: Practitioner updated successfully.
+                    id: EMP-PUB-002
+    InvalidOrMissingApiKey:
+      description: 'Missing credentials or invalid API key.
+
+        '
+      content:
+        application/fhir+json:
+          schema:
+            $ref: '#/components/schemas/OperationOutcome'
+          examples:
+            missingCredentials:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: login
+                  details:
+                    text: 'Missing or invalid authentication credentials. Provide an API key using the X-API-Key header or Authorization: Bearer <token>.'
+            invalidApiKey:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: login
+                  details:
+                    text: Invalid or revoked API key.
+    PractitionerCreated:
+      description: Practitioner created successfully. The current runtime success message uses the term `Provider`.
+      content:
+        application/fhir+json:
+          schema:
+            $ref: '#/components/schemas/OperationOutcome'
+          examples:
+            default:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: information
+                  code: informational
+                  details:
+                    text: Practitioner created successfully.
+                    id: EMP-PUB-002
+    TooManyRequests:
+      description: 'Rate limit exceeded.
+
+        '
+      content:
+        application/fhir+json:
+          schema:
+            $ref: '#/components/schemas/OperationOutcome'
+          examples:
+            default:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: throttled
+                  details:
+                    text: Rate limit exceeded. Please retry after a short delay.
+    PractitionerNotFound:
+      description: Practitioner resource was not found
+      content:
+        application/fhir+json:
+          schema:
+            $ref: '#/components/schemas/OperationOutcome'
+          examples:
+            default:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: not-found
+                  details:
+                    text: Practitioner not found.
+    PractitionerWriteValidationError:
+      description: Practitioner write validation failed
+      content:
+        application/fhir+json:
+          schema:
+            $ref: '#/components/schemas/OperationOutcome'
+          examples:
+            practitionerResourceType:
+              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/practitionerResourceType'
+            practitionerBirthDateFormat:
+              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/practitionerBirthDateFormat'
+            practitionerMissingRequiredNestedField:
+              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/practitionerMissingRequiredNestedField'
+            practitionerInvalidScalar:
+              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/practitionerInvalidScalar'
+            practitionerInvalidStatus:
+              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/practitionerInvalidStatus'
+            practitionerInvalidActiveStatusReason:
+              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/practitionerInvalidActiveStatusReason'
+            practitionerInvalidInactiveStatusReason:
+              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/practitionerInvalidInactiveStatusReason'
+            practitionerInvalidDeactivatedStatusReason:
+              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/practitionerInvalidDeactivatedStatusReason'
+            practitionerIncompatibleStatusReason:
+              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/practitionerIncompatibleStatusReason'
+            practitionerMissingDeactivatedStatusReason:
+              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/practitionerMissingDeactivatedStatusReason'
+            practitionerCreateMultipleIssues:
+              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/practitionerCreateMultipleIssues'
+            practitionerUnsupportedWriteField:
+              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/practitionerUnsupportedWriteField'
+            practitionerInvalidDepartmentReference:
+              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/practitionerInvalidDepartmentReference'
+            practitionerInvalidLocationReference:
+              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/practitionerInvalidLocationReference'
+    InternalServerError:
+      description: Unexpected internal error
+      content:
+        application/fhir+json:
+          schema:
+            $ref: '#/components/schemas/OperationOutcome'
+          examples:
+            default:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: exception
+                  details:
+                    text: An internal server error occurred. Please try again later.
+    BadGateway:
+      description: The requested resource identifier could not be resolved at this time
+      content:
+        application/fhir+json:
+          schema:
+            $ref: '#/components/schemas/OperationOutcome'
+          examples:
+            resolverUnavailable:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: Public id resolution request failed.
+  parameters:
+    SearchPage:
+      name: _page
+      in: query
+      required: false
+      description: 1-based page number. Must be a positive integer.
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    SearchCount:
+      name: _count
+      in: query
+      required: false
+      description: Number of resources to return. Must be a positive integer.
+      schema:
+        type: integer
+        minimum: 1
+        default: 20
+    SearchElements:
+      name: _elements
+      in: query
+      required: false
+      description: 'Comma-separated field selector.
+
+
+        For location, division, position, department, and practitioner category
+
+        searches, the implemented selectors are `id`, `name`, `division`,
+
+        `locations`, and `clinical` as applicable.
+
+        The default when `_elements` is omitted: locations default to
+
+        `id,name`; divisions default to `id,name,locations`; positions default
+
+        to `id,name,clinical`; departments default to `id,name`; practitioner
+
+        categories default to `id,name`.
+
+
+        For practitioners, nested selectors are allowed, including values such
+
+        as `telecom.email`, `telecom.homePhone`, `address.city`,
+
+        `extension.user.status`, `extension.user.statusReason`,
+
+        `extension.user.userType`, or `extension.provider.npiNumber`.
+
+        The public practitioner response uses
+
+        `extension.user.status` and `extension.user.statusReason` for the
+
+        visible status state; the legacy `employeeCategoryId` is not exposed.
+
+        When `_elements` is omitted on practitioner search or get-by-id, the
+
+        full public resource is returned.
+
+
+        Whitespace around values is trimmed. Unknown selectors are preserved in
+
+        pagination links but ignored when each resource is built.
+
+
+        Pagination `link.url` values are returned as absolute URLs including
+
+        scheme and host (for example, `/api/v1/...` resolves against the active
+
+        server entry).
+
+        '
+      schema:
+        type: string
+        example: id,name
+    PractitionerPublicId:
+      name: publicId
+      in: path
+      required: true
+      description: Public practitioner identifier.
+      schema:
+        type: string
+        example: PRAC-001
+  securitySchemes:
+    ApiKeyHeader:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: Preferred authentication header for protected endpoints.
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API key
+      description: 'Alternative authentication scheme using `Authorization: Bearer <token>`.'
