@@ -45,6 +45,18 @@ tags:
 - HL7
 - Training
 - Risk Management
+- Software-as-a-Service
+tags_raw:
+- Company
+- Healthcare
+- Compliance
+- Credentialing
+- Learning Management
+- Provider Directory
+- FHIR
+- HL7
+- Training
+- Risk Management
 - SaaS
 apis:
 - aid: medtrainer:medtrainer-departments-api
