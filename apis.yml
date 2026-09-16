@@ -1,20 +1,17 @@
 aid: medtrainer
 name: MedTrainer
-description: 'MedTrainer is a healthcare workforce compliance software company that consolidates
-  learning management, credentialing and provider enrollment, document and policy management,
-  incident reporting, safety plans, contract management and exclusion/sanction monitoring
-  into a single all-in-one platform for medical practices, ambulatory surgery centers,
-  urgent care, behavioral health, dental groups, community health centers and long-term
-  care organizations. The company publishes a MedTrainer Public API at api.medtrainer.com,
-  documented with an OpenAPI 3.1 definition rendered through Redoc, that lets external
-  integrations search and manage the core provider directory — locations, divisions,
-  departments, positions, practitioner categories and practitioners. The API is notable
-  for being FHIR-aligned: resource payloads use HL7 FHIR shapes and the application/fhir+json
-  media type, searches return FHIR Bundle envelopes with FHIR search parameters (_count,
-  _page, _elements), and every error is returned as a FHIR OperationOutcome. Access is
-  customer-gated behind an API key generated from the platform Organization settings,
-  and the wider platform authenticates against an Auth0-backed OpenID Connect provider
-  at auth.medtrainer.com.'
+description: 'MedTrainer is a healthcare workforce compliance software company that consolidates learning
+  management, credentialing and provider enrollment, document and policy management, incident reporting,
+  safety plans, contract management and exclusion/sanction monitoring into a single all-in-one platform
+  for medical practices, ambulatory surgery centers, urgent care, behavioral health, dental groups, community
+  health centers and long-term care organizations. The company publishes a MedTrainer Public API at api.medtrainer.com,
+  documented with an OpenAPI 3.1 definition rendered through Redoc, that lets external integrations search
+  and manage the core provider directory — locations, divisions, departments, positions, practitioner
+  categories and practitioners. The API is notable for being FHIR-aligned: resource payloads use HL7 FHIR
+  shapes and the application/fhir+json media type, searches return FHIR Bundle envelopes with FHIR search
+  parameters (_count, _page, _elements), and every error is returned as a FHIR OperationOutcome. Access
+  is customer-gated behind an API key generated from the platform Organization settings, and the wider
+  platform authenticates against an Auth0-backed OpenID Connect provider at auth.medtrainer.com.'
 url: https://raw.githubusercontent.com/api-evangelist/medtrainer/refs/heads/main/apis.yml
 deliveryModel:
   model: saas
@@ -49,7 +46,7 @@ x-type: company
 x-source: harvest:secondary-market
 specificationVersion: '0.20'
 created: '2026-08-25'
-modified: '2026-08-25'
+modified: '2026-09-16'
 tags:
 - Company
 - Healthcare
@@ -296,7 +293,7 @@ common:
 - type: Integrations
   url: https://medtrainer.com/products/integrations/
 - type: OpenAPI
-  url: openapi/medtrainer-public-api-openapi.json
+  url: openapi/_original/medtrainer-public-api-openapi.json
 - type: Authentication
   url: authentication/medtrainer-authentication.yml
 - type: OAuthScopes
