@@ -138,6 +138,8 @@ apis:
   humanURL: https://api.medtrainer.com/docs
   baseURL: https://api.medtrainer.com
   tags:
+  - Location
+  tags_raw:
   - Locations
   properties:
   - type: OpenAPI
