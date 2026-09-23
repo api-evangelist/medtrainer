@@ -1,0 +1,30 @@
+{
+  "provider": "medtrainer",
+  "sources": [
+    "_original/medtrainer-public-api-openapi.json"
+  ],
+  "outputs": [
+    "medtrainer-departments-api-openapi.yml",
+    "medtrainer-divisions-api-openapi.yml",
+    "medtrainer-locations-api-openapi.yml",
+    "medtrainer-positions-api-openapi.yml",
+    "medtrainer-practitioner-categories-api-openapi.yml",
+    "medtrainer-practitioners-api-openapi.yml"
+  ],
+  "archived": [],
+  "errors": [],
+  "warnings": [],
+  "notes": [
+    "sourced from openapi/_original/ (1 archived document(s)); previously refined output at the top level was skipped rather than re-split",
+    "medtrainer-public-api-openapi.json: upgraded openapi 3.1.0 -> OpenAPI 3.2.0",
+    "apis.yml register: already-registered"
+  ],
+  "skipped": [
+    "medtrainer-departments-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "medtrainer-divisions-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "medtrainer-locations-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "medtrainer-positions-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "medtrainer-practitioner-categories-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "medtrainer-practitioners-api-openapi.yml: previously refined output, superseded by openapi/_original/"
+  ]
+}
