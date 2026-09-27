@@ -129,7 +129,216 @@ paths:
                       expression:
                       - publicId
 components:
+  schemas:
+    OperationOutcomeDetails:
+      type: object
+      additionalProperties: false
+      required:
+      - text
+      properties:
+        text:
+          type: string
+        id:
+          type: string
+    BundleLink:
+      type: object
+      additionalProperties: false
+      required:
+      - relation
+      - url
+      properties:
+        relation:
+          type: string
+          enum:
+          - self
+          - first
+          - previous
+          - next
+          - last
+        url:
+          type: string
+          format: uri
+    OperationOutcomeIssue:
+      type: object
+      additionalProperties: false
+      required:
+      - severity
+      - code
+      - details
+      properties:
+        severity:
+          type: string
+          enum:
+          - fatal
+          - error
+          - warning
+          - information
+        code:
+          type: string
+          example: invalid
+        details:
+          $ref: '#/components/schemas/OperationOutcomeDetails'
+        expression:
+          type: array
+          items:
+            type: string
+    PractitionerCategory:
+      type: object
+      additionalProperties: false
+      required:
+      - resourceType
+      properties:
+        resourceType:
+          type: string
+          const: PractitionerCategory
+        id:
+          type: string
+          example: PCAT-001
+        name:
+          type:
+          - string
+          - 'null'
+          example: Nursing
+    PractitionerCategorySearchBundle:
+      type: object
+      additionalProperties: false
+      required:
+      - resourceType
+      - type
+      - total
+      - link
+      - entry
+      properties:
+        resourceType:
+          type: string
+          const: Bundle
+        type:
+          type: string
+          const: searchset
+        total:
+          type: integer
+          minimum: 0
+        link:
+          type: array
+          items:
+            $ref: '#/components/schemas/BundleLink'
+        entry:
+          type: array
+          items:
+            $ref: '#/components/schemas/PractitionerCategorySearchEntry'
+    PractitionerCategorySearchEntry:
+      type: object
+      additionalProperties: false
+      required:
+      - resource
+      properties:
+        resource:
+          $ref: '#/components/schemas/PractitionerCategory'
+    OperationOutcome:
+      type: object
+      additionalProperties: false
+      required:
+      - resourceType
+      - issue
+      properties:
+        resourceType:
+          type: string
+          const: OperationOutcome
+        issue:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/OperationOutcomeIssue'
+  parameters:
+    PractitionerCategorySearchElements:
+      name: _elements
+      in: query
+      required: false
+      description: 'Comma-separated field selector for practitioner category search.
+
+
+        The only implemented selectors for this endpoint are `id` and `name`.
+
+        When `_elements` is omitted, practitioner category resources default to
+
+        `id,name`.
+
+
+        Whitespace around values is trimmed. Unknown selectors are preserved in
+
+        pagination links but ignored when each resource is built.
+
+        '
+      schema:
+        type: string
+        example: id,name
+    SearchPage:
+      name: _page
+      in: query
+      required: false
+      description: 1-based page number. Must be a positive integer.
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    SearchCount:
+      name: _count
+      in: query
+      required: false
+      description: Number of resources to return. Must be a positive integer.
+      schema:
+        type: integer
+        minimum: 1
+        default: 20
+    PractitionerCategoryPublicId:
+      name: publicId
+      in: path
+      required: true
+      description: Public practitioner category identifier.
+      schema:
+        type: string
+        example: PCAT-001
   responses:
+    PractitionerCategoryNotFound:
+      description: Practitioner category resource was not found
+      content:
+        application/fhir+json:
+          schema:
+            $ref: '#/components/schemas/OperationOutcome'
+          examples:
+            default:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: not-found
+                  details:
+                    text: Practitioner category not found.
+    InvalidOrMissingApiKey:
+      description: 'Missing credentials or invalid API key.
+
+        '
+      content:
+        application/fhir+json:
+          schema:
+            $ref: '#/components/schemas/OperationOutcome'
+          examples:
+            missingCredentials:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: login
+                  details:
+                    text: 'Missing or invalid authentication credentials. Provide an API key using the X-API-Key header or Authorization: Bearer <token>.'
+            invalidApiKey:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: login
+                  details:
+                    text: Invalid or revoked API key.
     ValidationError:
       description: Request validation failed
       content:
@@ -430,46 +639,19 @@ components:
                     text: One or more location ids could not be resolved.
                   expression:
                   - extension.user.location
-    InternalServerError:
-      description: Unexpected internal error
+    SearchValidationError:
+      description: Search request validation failed
       content:
         application/fhir+json:
           schema:
             $ref: '#/components/schemas/OperationOutcome'
           examples:
-            default:
-              value:
-                resourceType: OperationOutcome
-                issue:
-                - severity: error
-                  code: exception
-                  details:
-                    text: An internal server error occurred. Please try again later.
-    InvalidOrMissingApiKey:
-      description: 'Missing credentials or invalid API key.
-
-        '
-      content:
-        application/fhir+json:
-          schema:
-            $ref: '#/components/schemas/OperationOutcome'
-          examples:
-            missingCredentials:
-              value:
-                resourceType: OperationOutcome
-                issue:
-                - severity: error
-                  code: login
-                  details:
-                    text: 'Missing or invalid authentication credentials. Provide an API key using the X-API-Key header or Authorization: Bearer <token>.'
-            invalidApiKey:
-              value:
-                resourceType: OperationOutcome
-                issue:
-                - severity: error
-                  code: login
-                  details:
-                    text: Invalid or revoked API key.
+            invalidIntegerQuery:
+              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/invalidIntegerQuery'
+            invalidPageLowerBound:
+              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/invalidPageLowerBound'
+            invalidElementsType:
+              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/invalidElementsType'
     TooManyRequests:
       description: 'Rate limit exceeded.
 
@@ -487,8 +669,8 @@ components:
                   code: throttled
                   details:
                     text: Rate limit exceeded. Please retry after a short delay.
-    PractitionerCategoryNotFound:
-      description: Practitioner category resource was not found
+    InternalServerError:
+      description: Unexpected internal error
       content:
         application/fhir+json:
           schema:
@@ -499,191 +681,9 @@ components:
                 resourceType: OperationOutcome
                 issue:
                 - severity: error
-                  code: not-found
+                  code: exception
                   details:
-                    text: Practitioner category not found.
-    SearchValidationError:
-      description: Search request validation failed
-      content:
-        application/fhir+json:
-          schema:
-            $ref: '#/components/schemas/OperationOutcome'
-          examples:
-            invalidIntegerQuery:
-              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/invalidIntegerQuery'
-            invalidPageLowerBound:
-              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/invalidPageLowerBound'
-            invalidElementsType:
-              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/invalidElementsType'
-  parameters:
-    PractitionerCategoryPublicId:
-      name: publicId
-      in: path
-      required: true
-      description: Public practitioner category identifier.
-      schema:
-        type: string
-        example: PCAT-001
-    SearchPage:
-      name: _page
-      in: query
-      required: false
-      description: 1-based page number. Must be a positive integer.
-      schema:
-        type: integer
-        minimum: 1
-        default: 1
-    PractitionerCategorySearchElements:
-      name: _elements
-      in: query
-      required: false
-      description: 'Comma-separated field selector for practitioner category search.
-
-
-        The only implemented selectors for this endpoint are `id` and `name`.
-
-        When `_elements` is omitted, practitioner category resources default to
-
-        `id,name`.
-
-
-        Whitespace around values is trimmed. Unknown selectors are preserved in
-
-        pagination links but ignored when each resource is built.
-
-        '
-      schema:
-        type: string
-        example: id,name
-    SearchCount:
-      name: _count
-      in: query
-      required: false
-      description: Number of resources to return. Must be a positive integer.
-      schema:
-        type: integer
-        minimum: 1
-        default: 20
-  schemas:
-    OperationOutcome:
-      type: object
-      additionalProperties: false
-      required:
-      - resourceType
-      - issue
-      properties:
-        resourceType:
-          type: string
-          const: OperationOutcome
-        issue:
-          type: array
-          minItems: 1
-          items:
-            $ref: '#/components/schemas/OperationOutcomeIssue'
-    PractitionerCategorySearchBundle:
-      type: object
-      additionalProperties: false
-      required:
-      - resourceType
-      - type
-      - total
-      - link
-      - entry
-      properties:
-        resourceType:
-          type: string
-          const: Bundle
-        type:
-          type: string
-          const: searchset
-        total:
-          type: integer
-          minimum: 0
-        link:
-          type: array
-          items:
-            $ref: '#/components/schemas/BundleLink'
-        entry:
-          type: array
-          items:
-            $ref: '#/components/schemas/PractitionerCategorySearchEntry'
-    PractitionerCategorySearchEntry:
-      type: object
-      additionalProperties: false
-      required:
-      - resource
-      properties:
-        resource:
-          $ref: '#/components/schemas/PractitionerCategory'
-    BundleLink:
-      type: object
-      additionalProperties: false
-      required:
-      - relation
-      - url
-      properties:
-        relation:
-          type: string
-          enum:
-          - self
-          - first
-          - previous
-          - next
-          - last
-        url:
-          type: string
-          format: uri
-    OperationOutcomeDetails:
-      type: object
-      additionalProperties: false
-      required:
-      - text
-      properties:
-        text:
-          type: string
-        id:
-          type: string
-    OperationOutcomeIssue:
-      type: object
-      additionalProperties: false
-      required:
-      - severity
-      - code
-      - details
-      properties:
-        severity:
-          type: string
-          enum:
-          - fatal
-          - error
-          - warning
-          - information
-        code:
-          type: string
-          example: invalid
-        details:
-          $ref: '#/components/schemas/OperationOutcomeDetails'
-        expression:
-          type: array
-          items:
-            type: string
-    PractitionerCategory:
-      type: object
-      additionalProperties: false
-      required:
-      - resourceType
-      properties:
-        resourceType:
-          type: string
-          const: PractitionerCategory
-        id:
-          type: string
-          example: PCAT-001
-        name:
-          type:
-          - string
-          - 'null'
-          example: Nursing
+                    text: An internal server error occurred. Please try again later.
   securitySchemes:
     ApiKeyHeader:
       type: apiKey
