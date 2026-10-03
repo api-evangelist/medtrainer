@@ -117,36 +117,6 @@ paths:
           $ref: '#/components/responses/BadGateway'
 components:
   responses:
-    DepartmentNotFound:
-      description: Department resource was not found
-      content:
-        application/fhir+json:
-          schema:
-            $ref: '#/components/schemas/OperationOutcome'
-          examples:
-            default:
-              value:
-                resourceType: OperationOutcome
-                issue:
-                - severity: error
-                  code: not-found
-                  details:
-                    text: Department not found.
-    BadGateway:
-      description: The requested resource identifier could not be resolved at this time
-      content:
-        application/fhir+json:
-          schema:
-            $ref: '#/components/schemas/OperationOutcome'
-          examples:
-            resolverUnavailable:
-              value:
-                resourceType: OperationOutcome
-                issue:
-                - severity: error
-                  code: invalid
-                  details:
-                    text: Public id resolution request failed.
     InvalidOrMissingApiKey:
       description: 'Missing credentials or invalid API key.
 
@@ -485,6 +455,21 @@ components:
               $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/invalidPageLowerBound'
             invalidElementsType:
               $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/invalidElementsType'
+    DepartmentNotFound:
+      description: Department resource was not found
+      content:
+        application/fhir+json:
+          schema:
+            $ref: '#/components/schemas/OperationOutcome'
+          examples:
+            default:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: not-found
+                  details:
+                    text: Department not found.
     TooManyRequests:
       description: 'Rate limit exceeded.
 
@@ -502,6 +487,21 @@ components:
                   code: throttled
                   details:
                     text: Rate limit exceeded. Please retry after a short delay.
+    BadGateway:
+      description: The requested resource identifier could not be resolved at this time
+      content:
+        application/fhir+json:
+          schema:
+            $ref: '#/components/schemas/OperationOutcome'
+          examples:
+            resolverUnavailable:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: Public id resolution request failed.
     InternalServerError:
       description: Unexpected internal error
       content:
@@ -518,34 +518,6 @@ components:
                   details:
                     text: An internal server error occurred. Please try again later.
   schemas:
-    OperationOutcomeDetails:
-      type: object
-      additionalProperties: false
-      required:
-      - text
-      properties:
-        text:
-          type: string
-        id:
-          type: string
-    BundleLink:
-      type: object
-      additionalProperties: false
-      required:
-      - relation
-      - url
-      properties:
-        relation:
-          type: string
-          enum:
-          - self
-          - first
-          - previous
-          - next
-          - last
-        url:
-          type: string
-          format: uri
     DepartmentSearchBundle:
       type: object
       additionalProperties: false
@@ -573,6 +545,47 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/DepartmentSearchEntry'
+    BundleLink:
+      type: object
+      additionalProperties: false
+      required:
+      - relation
+      - url
+      properties:
+        relation:
+          type: string
+          enum:
+          - self
+          - first
+          - previous
+          - next
+          - last
+        url:
+          type: string
+          format: uri
+    DepartmentSearchEntry:
+      type: object
+      additionalProperties: false
+      required:
+      - resource
+      properties:
+        resource:
+          $ref: '#/components/schemas/Department'
+    OperationOutcome:
+      type: object
+      additionalProperties: false
+      required:
+      - resourceType
+      - issue
+      properties:
+        resourceType:
+          type: string
+          const: OperationOutcome
+        issue:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/OperationOutcomeIssue'
     OperationOutcomeIssue:
       type: object
       additionalProperties: false
@@ -614,48 +627,17 @@ components:
           - string
           - 'null'
           example: Compliance/HIPAA
-    DepartmentSearchEntry:
+    OperationOutcomeDetails:
       type: object
       additionalProperties: false
       required:
-      - resource
+      - text
       properties:
-        resource:
-          $ref: '#/components/schemas/Department'
-    OperationOutcome:
-      type: object
-      additionalProperties: false
-      required:
-      - resourceType
-      - issue
-      properties:
-        resourceType:
+        text:
           type: string
-          const: OperationOutcome
-        issue:
-          type: array
-          minItems: 1
-          items:
-            $ref: '#/components/schemas/OperationOutcomeIssue'
+        id:
+          type: string
   parameters:
-    SearchPage:
-      name: _page
-      in: query
-      required: false
-      description: 1-based page number. Must be a positive integer.
-      schema:
-        type: integer
-        minimum: 1
-        default: 1
-    SearchCount:
-      name: _count
-      in: query
-      required: false
-      description: Number of resources to return. Must be a positive integer.
-      schema:
-        type: integer
-        minimum: 1
-        default: 20
     SearchElements:
       name: _elements
       in: query
@@ -712,6 +694,24 @@ components:
       schema:
         type: string
         example: id,name
+    SearchCount:
+      name: _count
+      in: query
+      required: false
+      description: Number of resources to return. Must be a positive integer.
+      schema:
+        type: integer
+        minimum: 1
+        default: 20
+    SearchPage:
+      name: _page
+      in: query
+      required: false
+      description: 1-based page number. Must be a positive integer.
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
     DepartmentPublicId:
       name: publicId
       in: path

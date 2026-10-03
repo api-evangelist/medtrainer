@@ -99,160 +99,7 @@ paths:
         '502':
           $ref: '#/components/responses/BadGateway'
 components:
-  schemas:
-    Position:
-      type: object
-      additionalProperties: false
-      required:
-      - resourceType
-      properties:
-        resourceType:
-          type: string
-          const: Position
-        id:
-          type: string
-          example: POS-001
-        name:
-          type:
-          - string
-          - 'null'
-          example: Analyst
-        clinical:
-          type: boolean
-          example: true
-    PositionSearchBundle:
-      type: object
-      additionalProperties: false
-      required:
-      - resourceType
-      - type
-      - total
-      - link
-      - entry
-      properties:
-        resourceType:
-          type: string
-          const: Bundle
-        type:
-          type: string
-          const: searchset
-        total:
-          type: integer
-          minimum: 0
-        link:
-          type: array
-          items:
-            $ref: '#/components/schemas/BundleLink'
-        entry:
-          type: array
-          items:
-            $ref: '#/components/schemas/PositionSearchEntry'
-    OperationOutcomeDetails:
-      type: object
-      additionalProperties: false
-      required:
-      - text
-      properties:
-        text:
-          type: string
-        id:
-          type: string
-    BundleLink:
-      type: object
-      additionalProperties: false
-      required:
-      - relation
-      - url
-      properties:
-        relation:
-          type: string
-          enum:
-          - self
-          - first
-          - previous
-          - next
-          - last
-        url:
-          type: string
-          format: uri
-    OperationOutcomeIssue:
-      type: object
-      additionalProperties: false
-      required:
-      - severity
-      - code
-      - details
-      properties:
-        severity:
-          type: string
-          enum:
-          - fatal
-          - error
-          - warning
-          - information
-        code:
-          type: string
-          example: invalid
-        details:
-          $ref: '#/components/schemas/OperationOutcomeDetails'
-        expression:
-          type: array
-          items:
-            type: string
-    OperationOutcome:
-      type: object
-      additionalProperties: false
-      required:
-      - resourceType
-      - issue
-      properties:
-        resourceType:
-          type: string
-          const: OperationOutcome
-        issue:
-          type: array
-          minItems: 1
-          items:
-            $ref: '#/components/schemas/OperationOutcomeIssue'
-    PositionSearchEntry:
-      type: object
-      additionalProperties: false
-      required:
-      - resource
-      properties:
-        resource:
-          $ref: '#/components/schemas/Position'
   responses:
-    PositionNotFound:
-      description: Position resource was not found
-      content:
-        application/fhir+json:
-          schema:
-            $ref: '#/components/schemas/OperationOutcome'
-          examples:
-            default:
-              value:
-                resourceType: OperationOutcome
-                issue:
-                - severity: error
-                  code: not-found
-                  details:
-                    text: Position not found.
-    BadGateway:
-      description: The requested resource identifier could not be resolved at this time
-      content:
-        application/fhir+json:
-          schema:
-            $ref: '#/components/schemas/OperationOutcome'
-          examples:
-            resolverUnavailable:
-              value:
-                resourceType: OperationOutcome
-                issue:
-                - severity: error
-                  code: invalid
-                  details:
-                    text: Public id resolution request failed.
     InvalidOrMissingApiKey:
       description: 'Missing credentials or invalid API key.
 
@@ -591,6 +438,21 @@ components:
               $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/invalidPageLowerBound'
             invalidElementsType:
               $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/invalidElementsType'
+    PositionNotFound:
+      description: Position resource was not found
+      content:
+        application/fhir+json:
+          schema:
+            $ref: '#/components/schemas/OperationOutcome'
+          examples:
+            default:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: not-found
+                  details:
+                    text: Position not found.
     TooManyRequests:
       description: 'Rate limit exceeded.
 
@@ -608,6 +470,21 @@ components:
                   code: throttled
                   details:
                     text: Rate limit exceeded. Please retry after a short delay.
+    BadGateway:
+      description: The requested resource identifier could not be resolved at this time
+      content:
+        application/fhir+json:
+          schema:
+            $ref: '#/components/schemas/OperationOutcome'
+          examples:
+            resolverUnavailable:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: Public id resolution request failed.
     InternalServerError:
       description: Unexpected internal error
       content:
@@ -623,25 +500,130 @@ components:
                   code: exception
                   details:
                     text: An internal server error occurred. Please try again later.
+  schemas:
+    PositionSearchBundle:
+      type: object
+      additionalProperties: false
+      required:
+      - resourceType
+      - type
+      - total
+      - link
+      - entry
+      properties:
+        resourceType:
+          type: string
+          const: Bundle
+        type:
+          type: string
+          const: searchset
+        total:
+          type: integer
+          minimum: 0
+        link:
+          type: array
+          items:
+            $ref: '#/components/schemas/BundleLink'
+        entry:
+          type: array
+          items:
+            $ref: '#/components/schemas/PositionSearchEntry'
+    BundleLink:
+      type: object
+      additionalProperties: false
+      required:
+      - relation
+      - url
+      properties:
+        relation:
+          type: string
+          enum:
+          - self
+          - first
+          - previous
+          - next
+          - last
+        url:
+          type: string
+          format: uri
+    OperationOutcome:
+      type: object
+      additionalProperties: false
+      required:
+      - resourceType
+      - issue
+      properties:
+        resourceType:
+          type: string
+          const: OperationOutcome
+        issue:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/OperationOutcomeIssue'
+    OperationOutcomeIssue:
+      type: object
+      additionalProperties: false
+      required:
+      - severity
+      - code
+      - details
+      properties:
+        severity:
+          type: string
+          enum:
+          - fatal
+          - error
+          - warning
+          - information
+        code:
+          type: string
+          example: invalid
+        details:
+          $ref: '#/components/schemas/OperationOutcomeDetails'
+        expression:
+          type: array
+          items:
+            type: string
+    OperationOutcomeDetails:
+      type: object
+      additionalProperties: false
+      required:
+      - text
+      properties:
+        text:
+          type: string
+        id:
+          type: string
+    Position:
+      type: object
+      additionalProperties: false
+      required:
+      - resourceType
+      properties:
+        resourceType:
+          type: string
+          const: Position
+        id:
+          type: string
+          example: POS-001
+        name:
+          type:
+          - string
+          - 'null'
+          example: Analyst
+        clinical:
+          type: boolean
+          example: true
+    PositionSearchEntry:
+      type: object
+      additionalProperties: false
+      required:
+      - resource
+      properties:
+        resource:
+          $ref: '#/components/schemas/Position'
   parameters:
-    SearchPage:
-      name: _page
-      in: query
-      required: false
-      description: 1-based page number. Must be a positive integer.
-      schema:
-        type: integer
-        minimum: 1
-        default: 1
-    SearchCount:
-      name: _count
-      in: query
-      required: false
-      description: Number of resources to return. Must be a positive integer.
-      schema:
-        type: integer
-        minimum: 1
-        default: 20
     SearchElements:
       name: _elements
       in: query
@@ -706,6 +688,24 @@ components:
       schema:
         type: string
         example: POS-001
+    SearchCount:
+      name: _count
+      in: query
+      required: false
+      description: Number of resources to return. Must be a positive integer.
+      schema:
+        type: integer
+        minimum: 1
+        default: 20
+    SearchPage:
+      name: _page
+      in: query
+      required: false
+      description: 1-based page number. Must be a positive integer.
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
   securitySchemes:
     ApiKeyHeader:
       type: apiKey

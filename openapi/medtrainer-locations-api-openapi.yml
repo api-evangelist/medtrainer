@@ -270,90 +270,15 @@ paths:
         '502':
           $ref: '#/components/responses/LocationBadGateway'
 components:
-  parameters:
-    LocationPublicId:
-      name: publicId
-      in: path
-      required: true
-      description: Public location identifier.
-      schema:
-        type: string
-        example: LOC-001
-    SearchPage:
-      name: _page
-      in: query
-      required: false
-      description: 1-based page number. Must be a positive integer.
-      schema:
-        type: integer
-        minimum: 1
-        default: 1
-    SearchCount:
-      name: _count
-      in: query
-      required: false
-      description: Number of resources to return. Must be a positive integer.
-      schema:
-        type: integer
-        minimum: 1
-        default: 20
-    SearchElements:
-      name: _elements
-      in: query
-      required: false
-      description: 'Comma-separated field selector.
-
-
-        For location, division, position, department, and practitioner category
-
-        searches, the implemented selectors are `id`, `name`, `division`,
-
-        `locations`, and `clinical` as applicable.
-
-        The default when `_elements` is omitted: locations default to
-
-        `id,name`; divisions default to `id,name,locations`; positions default
-
-        to `id,name,clinical`; departments default to `id,name`; practitioner
-
-        categories default to `id,name`.
-
-
-        For practitioners, nested selectors are allowed, including values such
-
-        as `telecom.email`, `telecom.homePhone`, `address.city`,
-
-        `extension.user.status`, `extension.user.statusReason`,
-
-        `extension.user.userType`, or `extension.provider.npiNumber`.
-
-        The public practitioner response uses
-
-        `extension.user.status` and `extension.user.statusReason` for the
-
-        visible status state; the legacy `employeeCategoryId` is not exposed.
-
-        When `_elements` is omitted on practitioner search or get-by-id, the
-
-        full public resource is returned.
-
-
-        Whitespace around values is trimmed. Unknown selectors are preserved in
-
-        pagination links but ignored when each resource is built.
-
-
-        Pagination `link.url` values are returned as absolute URLs including
-
-        scheme and host (for example, `/api/v1/...` resolves against the active
-
-        server entry).
-
-        '
-      schema:
-        type: string
-        example: id,name
   schemas:
+    LocationSearchEntry:
+      type: object
+      additionalProperties: false
+      required:
+      - resource
+      properties:
+        resource:
+          $ref: '#/components/schemas/Location'
     LocationSearchBundle:
       type: object
       additionalProperties: false
@@ -381,16 +306,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/LocationSearchEntry'
-    OperationOutcomeDetails:
-      type: object
-      additionalProperties: false
-      required:
-      - text
-      properties:
-        text:
-          type: string
-        id:
-          type: string
     BundleLink:
       type: object
       additionalProperties: false
@@ -409,104 +324,6 @@ components:
         url:
           type: string
           format: uri
-    OperationOutcomeIssue:
-      type: object
-      additionalProperties: false
-      required:
-      - severity
-      - code
-      - details
-      properties:
-        severity:
-          type: string
-          enum:
-          - fatal
-          - error
-          - warning
-          - information
-        code:
-          type: string
-          example: invalid
-        details:
-          $ref: '#/components/schemas/OperationOutcomeDetails'
-        expression:
-          type: array
-          items:
-            type: string
-    Location:
-      type: object
-      additionalProperties: false
-      required:
-      - resourceType
-      properties:
-        resourceType:
-          type: string
-          const: Location
-        id:
-          type: string
-          example: LOC-001
-        name:
-          type: string
-          example: North Campus
-        addressLine:
-          type: string
-          example: 123 Main St
-        city:
-          type: string
-          example: Miami
-        state:
-          type: string
-          example: Florida
-        zipCode:
-          type: string
-          example: '33101'
-        phoneNumber:
-          type: string
-          example: 0987654321
-        fax:
-          type: string
-          example: '1234567890'
-        email:
-          type: string
-          format: email
-          example: first@test.com
-        sendEmail:
-          type: boolean
-          example: false
-        enabledCredentialing:
-          type: boolean
-          example: true
-        division:
-          type: object
-          description: Division associated with the location.
-          properties:
-            id:
-              type: string
-              example: DIV-001
-            name:
-              type: string
-              example: North Division
-        locations:
-          type: array
-          description: Optional child location identifiers when requested through `_elements`.
-          items:
-            type: string
-            example: LOC-010
-    OperationOutcome:
-      type: object
-      additionalProperties: false
-      required:
-      - resourceType
-      - issue
-      properties:
-        resourceType:
-          type: string
-          const: OperationOutcome
-        issue:
-          type: array
-          minItems: 1
-          items:
-            $ref: '#/components/schemas/OperationOutcomeIssue'
     LocationUpdateRequest:
       type: object
       description: 'Payload to update a location. ''name'' is required. ''state'' is optional when omitted,
@@ -583,14 +400,6 @@ components:
               example: DIV-001
           required:
           - reference
-    LocationSearchEntry:
-      type: object
-      additionalProperties: false
-      required:
-      - resource
-      properties:
-        resource:
-          $ref: '#/components/schemas/Location'
     LocationCreateRequest:
       type: object
       description: 'Payload required to create a location. Both ''name'' and ''state'' are required.
@@ -662,6 +471,114 @@ components:
               example: DIV-001
           required:
           - reference
+    OperationOutcome:
+      type: object
+      additionalProperties: false
+      required:
+      - resourceType
+      - issue
+      properties:
+        resourceType:
+          type: string
+          const: OperationOutcome
+        issue:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/OperationOutcomeIssue'
+    OperationOutcomeIssue:
+      type: object
+      additionalProperties: false
+      required:
+      - severity
+      - code
+      - details
+      properties:
+        severity:
+          type: string
+          enum:
+          - fatal
+          - error
+          - warning
+          - information
+        code:
+          type: string
+          example: invalid
+        details:
+          $ref: '#/components/schemas/OperationOutcomeDetails'
+        expression:
+          type: array
+          items:
+            type: string
+    OperationOutcomeDetails:
+      type: object
+      additionalProperties: false
+      required:
+      - text
+      properties:
+        text:
+          type: string
+        id:
+          type: string
+    Location:
+      type: object
+      additionalProperties: false
+      required:
+      - resourceType
+      properties:
+        resourceType:
+          type: string
+          const: Location
+        id:
+          type: string
+          example: LOC-001
+        name:
+          type: string
+          example: North Campus
+        addressLine:
+          type: string
+          example: 123 Main St
+        city:
+          type: string
+          example: Miami
+        state:
+          type: string
+          example: Florida
+        zipCode:
+          type: string
+          example: '33101'
+        phoneNumber:
+          type: string
+          example: 0987654321
+        fax:
+          type: string
+          example: '1234567890'
+        email:
+          type: string
+          format: email
+          example: first@test.com
+        sendEmail:
+          type: boolean
+          example: false
+        enabledCredentialing:
+          type: boolean
+          example: true
+        division:
+          type: object
+          description: Division associated with the location.
+          properties:
+            id:
+              type: string
+              example: DIV-001
+            name:
+              type: string
+              example: North Division
+        locations:
+          type: array
+          description: Optional child location identifiers when requested through `_elements`.
+          items:
+            type: string
+            example: LOC-010
   responses:
     LocationUpdated:
       description: Location updated successfully
@@ -679,46 +596,31 @@ components:
                   details:
                     text: Location updated successfully.
                     id: LOC-001
-    LocationBadGateway:
-      description: Location identifier or linked division could not be resolved at this time
+    InvalidOrMissingApiKey:
+      description: 'Missing credentials or invalid API key.
+
+        '
       content:
         application/fhir+json:
           schema:
             $ref: '#/components/schemas/OperationOutcome'
           examples:
-            resolverUnavailable:
-              $ref: '#/components/responses/BadGateway/content/application~1fhir+json/examples/resolverUnavailable'
-            divisionResolutionFailed:
+            missingCredentials:
               value:
                 resourceType: OperationOutcome
                 issue:
                 - severity: error
-                  code: invalid
+                  code: login
                   details:
-                    text: Division reference resolution request failed.
-    BadRequest:
-      description: Request rejected before validation or during request processing
-      content:
-        application/fhir+json:
-          schema:
-            $ref: '#/components/schemas/OperationOutcome'
-          examples:
-            invalidJson:
+                    text: 'Missing or invalid authentication credentials. Provide an API key using the X-API-Key header or Authorization: Bearer <token>.'
+            invalidApiKey:
               value:
                 resourceType: OperationOutcome
                 issue:
                 - severity: error
-                  code: invalid
+                  code: login
                   details:
-                    text: Request payload contains invalid "json" data.
-            rejectedByBackingService:
-              value:
-                resourceType: OperationOutcome
-                issue:
-                - severity: error
-                  code: invalid
-                  details:
-                    text: The request could not be processed.
+                    text: Invalid or revoked API key.
     ValidationError:
       description: Request validation failed
       content:
@@ -1019,70 +921,6 @@ components:
                     text: One or more location ids could not be resolved.
                   expression:
                   - extension.user.location
-    InvalidOrMissingApiKey:
-      description: 'Missing credentials or invalid API key.
-
-        '
-      content:
-        application/fhir+json:
-          schema:
-            $ref: '#/components/schemas/OperationOutcome'
-          examples:
-            missingCredentials:
-              value:
-                resourceType: OperationOutcome
-                issue:
-                - severity: error
-                  code: login
-                  details:
-                    text: 'Missing or invalid authentication credentials. Provide an API key using the X-API-Key header or Authorization: Bearer <token>.'
-            invalidApiKey:
-              value:
-                resourceType: OperationOutcome
-                issue:
-                - severity: error
-                  code: login
-                  details:
-                    text: Invalid or revoked API key.
-    LocationWriteNotFound:
-      description: Location or linked division resource identifier could not be resolved for a write request
-      content:
-        application/fhir+json:
-          schema:
-            $ref: '#/components/schemas/OperationOutcome'
-          examples:
-            locationNotFound:
-              value:
-                resourceType: OperationOutcome
-                issue:
-                - severity: error
-                  code: not-found
-                  details:
-                    text: One or more location ids could not be resolved.
-            divisionNotFound:
-              value:
-                resourceType: OperationOutcome
-                issue:
-                - severity: error
-                  code: not-found
-                  details:
-                    text: One or more division ids could not be resolved.
-    LocationCreated:
-      description: Location created successfully
-      content:
-        application/fhir+json:
-          schema:
-            $ref: '#/components/schemas/OperationOutcome'
-          examples:
-            default:
-              value:
-                resourceType: OperationOutcome
-                issue:
-                - severity: information
-                  code: informational
-                  details:
-                    text: Location created successfully.
-                    id: LOC-001
     SearchValidationError:
       description: Search request validation failed
       content:
@@ -1111,19 +949,100 @@ components:
                   code: invalid
                   details:
                     text: Public id resolution request failed.
-    LocationValidationError:
-      description: Location request validation failed
+    DivisionWriteNotFound:
+      description: Division resource identifier could not be resolved for a location write request
       content:
         application/fhir+json:
           schema:
             $ref: '#/components/schemas/OperationOutcome'
           examples:
-            missingName:
-              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/missingName'
-            missingState:
-              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/missingState'
-            invalidDivisionReference:
-              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/invalidDivisionReference'
+            default:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: not-found
+                  details:
+                    text: One or more division ids could not be resolved.
+    LocationWriteNotFound:
+      description: Location or linked division resource identifier could not be resolved for a write request
+      content:
+        application/fhir+json:
+          schema:
+            $ref: '#/components/schemas/OperationOutcome'
+          examples:
+            locationNotFound:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: not-found
+                  details:
+                    text: One or more location ids could not be resolved.
+            divisionNotFound:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: not-found
+                  details:
+                    text: One or more division ids could not be resolved.
+    LocationBadGateway:
+      description: Location identifier or linked division could not be resolved at this time
+      content:
+        application/fhir+json:
+          schema:
+            $ref: '#/components/schemas/OperationOutcome'
+          examples:
+            resolverUnavailable:
+              $ref: '#/components/responses/BadGateway/content/application~1fhir+json/examples/resolverUnavailable'
+            divisionResolutionFailed:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: Division reference resolution request failed.
+    BadRequest:
+      description: Request rejected before validation or during request processing
+      content:
+        application/fhir+json:
+          schema:
+            $ref: '#/components/schemas/OperationOutcome'
+          examples:
+            invalidJson:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: Request payload contains invalid "json" data.
+            rejectedByBackingService:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: The request could not be processed.
+    LocationCreated:
+      description: Location created successfully
+      content:
+        application/fhir+json:
+          schema:
+            $ref: '#/components/schemas/OperationOutcome'
+          examples:
+            default:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: information
+                  code: informational
+                  details:
+                    text: Location created successfully.
+                    id: LOC-001
     TooManyRequests:
       description: 'Rate limit exceeded.
 
@@ -1141,21 +1060,6 @@ components:
                   code: throttled
                   details:
                     text: Rate limit exceeded. Please retry after a short delay.
-    InternalServerError:
-      description: Unexpected internal error
-      content:
-        application/fhir+json:
-          schema:
-            $ref: '#/components/schemas/OperationOutcome'
-          examples:
-            default:
-              value:
-                resourceType: OperationOutcome
-                issue:
-                - severity: error
-                  code: exception
-                  details:
-                    text: An internal server error occurred. Please try again later.
     LocationNotFound:
       description: Location or linked division resource was not found
       content:
@@ -1179,8 +1083,21 @@ components:
                   code: not-found
                   details:
                     text: Division not found.
-    DivisionWriteNotFound:
-      description: Division resource identifier could not be resolved for a location write request
+    LocationValidationError:
+      description: Location request validation failed
+      content:
+        application/fhir+json:
+          schema:
+            $ref: '#/components/schemas/OperationOutcome'
+          examples:
+            missingName:
+              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/missingName'
+            missingState:
+              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/missingState'
+            invalidDivisionReference:
+              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/invalidDivisionReference'
+    InternalServerError:
+      description: Unexpected internal error
       content:
         application/fhir+json:
           schema:
@@ -1191,9 +1108,92 @@ components:
                 resourceType: OperationOutcome
                 issue:
                 - severity: error
-                  code: not-found
+                  code: exception
                   details:
-                    text: One or more division ids could not be resolved.
+                    text: An internal server error occurred. Please try again later.
+  parameters:
+    SearchElements:
+      name: _elements
+      in: query
+      required: false
+      description: 'Comma-separated field selector.
+
+
+        For location, division, position, department, and practitioner category
+
+        searches, the implemented selectors are `id`, `name`, `division`,
+
+        `locations`, and `clinical` as applicable.
+
+        The default when `_elements` is omitted: locations default to
+
+        `id,name`; divisions default to `id,name,locations`; positions default
+
+        to `id,name,clinical`; departments default to `id,name`; practitioner
+
+        categories default to `id,name`.
+
+
+        For practitioners, nested selectors are allowed, including values such
+
+        as `telecom.email`, `telecom.homePhone`, `address.city`,
+
+        `extension.user.status`, `extension.user.statusReason`,
+
+        `extension.user.userType`, or `extension.provider.npiNumber`.
+
+        The public practitioner response uses
+
+        `extension.user.status` and `extension.user.statusReason` for the
+
+        visible status state; the legacy `employeeCategoryId` is not exposed.
+
+        When `_elements` is omitted on practitioner search or get-by-id, the
+
+        full public resource is returned.
+
+
+        Whitespace around values is trimmed. Unknown selectors are preserved in
+
+        pagination links but ignored when each resource is built.
+
+
+        Pagination `link.url` values are returned as absolute URLs including
+
+        scheme and host (for example, `/api/v1/...` resolves against the active
+
+        server entry).
+
+        '
+      schema:
+        type: string
+        example: id,name
+    SearchCount:
+      name: _count
+      in: query
+      required: false
+      description: Number of resources to return. Must be a positive integer.
+      schema:
+        type: integer
+        minimum: 1
+        default: 20
+    SearchPage:
+      name: _page
+      in: query
+      required: false
+      description: 1-based page number. Must be a positive integer.
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    LocationPublicId:
+      name: publicId
+      in: path
+      required: true
+      description: Public location identifier.
+      schema:
+        type: string
+        example: LOC-001
   securitySchemes:
     ApiKeyHeader:
       type: apiKey
