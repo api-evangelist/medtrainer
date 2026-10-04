@@ -117,21 +117,6 @@ paths:
           $ref: '#/components/responses/BadGateway'
 components:
   responses:
-    DepartmentNotFound:
-      description: Department resource was not found
-      content:
-        application/fhir+json:
-          schema:
-            $ref: '#/components/schemas/OperationOutcome'
-          examples:
-            default:
-              value:
-                resourceType: OperationOutcome
-                issue:
-                - severity: error
-                  code: not-found
-                  details:
-                    text: Department not found.
     ValidationError:
       description: Request validation failed
       content:
@@ -447,21 +432,51 @@ components:
                   code: exception
                   details:
                     text: An internal server error occurred. Please try again later.
-    BadGateway:
-      description: The requested resource identifier could not be resolved at this time
+    SearchValidationError:
+      description: Search request validation failed
       content:
         application/fhir+json:
           schema:
             $ref: '#/components/schemas/OperationOutcome'
           examples:
-            resolverUnavailable:
+            invalidIntegerQuery:
+              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/invalidIntegerQuery'
+            invalidPageLowerBound:
+              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/invalidPageLowerBound'
+            invalidElementsType:
+              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/invalidElementsType'
+    DepartmentNotFound:
+      description: Department resource was not found
+      content:
+        application/fhir+json:
+          schema:
+            $ref: '#/components/schemas/OperationOutcome'
+          examples:
+            default:
               value:
                 resourceType: OperationOutcome
                 issue:
                 - severity: error
-                  code: invalid
+                  code: not-found
                   details:
-                    text: Public id resolution request failed.
+                    text: Department not found.
+    TooManyRequests:
+      description: 'Rate limit exceeded.
+
+        '
+      content:
+        application/fhir+json:
+          schema:
+            $ref: '#/components/schemas/OperationOutcome'
+          examples:
+            default:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: throttled
+                  details:
+                    text: Rate limit exceeded. Please retry after a short delay.
     InvalidOrMissingApiKey:
       description: 'Missing credentials or invalid API key.
 
@@ -487,37 +502,82 @@ components:
                   code: login
                   details:
                     text: Invalid or revoked API key.
-    TooManyRequests:
-      description: 'Rate limit exceeded.
-
-        '
+    BadGateway:
+      description: The requested resource identifier could not be resolved at this time
       content:
         application/fhir+json:
           schema:
             $ref: '#/components/schemas/OperationOutcome'
           examples:
-            default:
+            resolverUnavailable:
               value:
                 resourceType: OperationOutcome
                 issue:
                 - severity: error
-                  code: throttled
+                  code: invalid
                   details:
-                    text: Rate limit exceeded. Please retry after a short delay.
-    SearchValidationError:
-      description: Search request validation failed
-      content:
-        application/fhir+json:
-          schema:
-            $ref: '#/components/schemas/OperationOutcome'
-          examples:
-            invalidIntegerQuery:
-              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/invalidIntegerQuery'
-            invalidPageLowerBound:
-              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/invalidPageLowerBound'
-            invalidElementsType:
-              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/invalidElementsType'
+                    text: Public id resolution request failed.
   schemas:
+    OperationOutcomeDetails:
+      type: object
+      additionalProperties: false
+      required:
+      - text
+      properties:
+        text:
+          type: string
+        id:
+          type: string
+    Department:
+      type: object
+      additionalProperties: false
+      required:
+      - resourceType
+      properties:
+        resourceType:
+          type: string
+          const: Department
+        id:
+          type: string
+          example: DEPT-001
+        name:
+          type:
+          - string
+          - 'null'
+          example: Compliance/HIPAA
+    OperationOutcome:
+      type: object
+      additionalProperties: false
+      required:
+      - resourceType
+      - issue
+      properties:
+        resourceType:
+          type: string
+          const: OperationOutcome
+        issue:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/OperationOutcomeIssue'
+    BundleLink:
+      type: object
+      additionalProperties: false
+      required:
+      - relation
+      - url
+      properties:
+        relation:
+          type: string
+          enum:
+          - self
+          - first
+          - previous
+          - next
+          - last
+        url:
+          type: string
+          format: uri
     DepartmentSearchEntry:
       type: object
       additionalProperties: false
@@ -526,6 +586,30 @@ components:
       properties:
         resource:
           $ref: '#/components/schemas/Department'
+    OperationOutcomeIssue:
+      type: object
+      additionalProperties: false
+      required:
+      - severity
+      - code
+      - details
+      properties:
+        severity:
+          type: string
+          enum:
+          - fatal
+          - error
+          - warning
+          - information
+        code:
+          type: string
+          example: invalid
+        details:
+          $ref: '#/components/schemas/OperationOutcomeDetails'
+        expression:
+          type: array
+          items:
+            type: string
     DepartmentSearchBundle:
       type: object
       additionalProperties: false
@@ -553,90 +637,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/DepartmentSearchEntry'
-    OperationOutcome:
-      type: object
-      additionalProperties: false
-      required:
-      - resourceType
-      - issue
-      properties:
-        resourceType:
-          type: string
-          const: OperationOutcome
-        issue:
-          type: array
-          minItems: 1
-          items:
-            $ref: '#/components/schemas/OperationOutcomeIssue'
-    Department:
-      type: object
-      additionalProperties: false
-      required:
-      - resourceType
-      properties:
-        resourceType:
-          type: string
-          const: Department
-        id:
-          type: string
-          example: DEPT-001
-        name:
-          type:
-          - string
-          - 'null'
-          example: Compliance/HIPAA
-    BundleLink:
-      type: object
-      additionalProperties: false
-      required:
-      - relation
-      - url
-      properties:
-        relation:
-          type: string
-          enum:
-          - self
-          - first
-          - previous
-          - next
-          - last
-        url:
-          type: string
-          format: uri
-    OperationOutcomeDetails:
-      type: object
-      additionalProperties: false
-      required:
-      - text
-      properties:
-        text:
-          type: string
-        id:
-          type: string
-    OperationOutcomeIssue:
-      type: object
-      additionalProperties: false
-      required:
-      - severity
-      - code
-      - details
-      properties:
-        severity:
-          type: string
-          enum:
-          - fatal
-          - error
-          - warning
-          - information
-        code:
-          type: string
-          example: invalid
-        details:
-          $ref: '#/components/schemas/OperationOutcomeDetails'
-        expression:
-          type: array
-          items:
-            type: string
   parameters:
     DepartmentPublicId:
       name: publicId
@@ -646,6 +646,24 @@ components:
       schema:
         type: string
         example: DEPT-001
+    SearchPage:
+      name: _page
+      in: query
+      required: false
+      description: 1-based page number. Must be a positive integer.
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    SearchCount:
+      name: _count
+      in: query
+      required: false
+      description: Number of resources to return. Must be a positive integer.
+      schema:
+        type: integer
+        minimum: 1
+        default: 20
     SearchElements:
       name: _elements
       in: query
@@ -702,24 +720,6 @@ components:
       schema:
         type: string
         example: id,name
-    SearchPage:
-      name: _page
-      in: query
-      required: false
-      description: 1-based page number. Must be a positive integer.
-      schema:
-        type: integer
-        minimum: 1
-        default: 1
-    SearchCount:
-      name: _count
-      in: query
-      required: false
-      description: Number of resources to return. Must be a positive integer.
-      schema:
-        type: integer
-        minimum: 1
-        default: 20
   securitySchemes:
     ApiKeyHeader:
       type: apiKey

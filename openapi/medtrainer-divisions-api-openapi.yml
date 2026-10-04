@@ -560,29 +560,36 @@ components:
                     text: One or more location ids could not be resolved.
                   expression:
                   - extension.user.location
-    BadRequest:
-      description: Request rejected before validation or during request processing
+    InternalServerError:
+      description: Unexpected internal error
       content:
         application/fhir+json:
           schema:
             $ref: '#/components/schemas/OperationOutcome'
           examples:
-            invalidJson:
+            default:
               value:
                 resourceType: OperationOutcome
                 issue:
                 - severity: error
-                  code: invalid
+                  code: exception
                   details:
-                    text: Request payload contains invalid "json" data.
-            rejectedByBackingService:
+                    text: An internal server error occurred. Please try again later.
+    DivisionNotFound:
+      description: Division resource was not found
+      content:
+        application/fhir+json:
+          schema:
+            $ref: '#/components/schemas/OperationOutcome'
+          examples:
+            default:
               value:
                 resourceType: OperationOutcome
                 issue:
                 - severity: error
-                  code: invalid
+                  code: not-found
                   details:
-                    text: The request could not be processed.
+                    text: Division not found.
     DivisionUpdated:
       description: Division updated successfully
       content:
@@ -599,36 +606,19 @@ components:
                   details:
                     text: Division updated successfully.
                     id: DIV-001
-    InternalServerError:
-      description: Unexpected internal error
+    SearchValidationError:
+      description: Search request validation failed
       content:
         application/fhir+json:
           schema:
             $ref: '#/components/schemas/OperationOutcome'
           examples:
-            default:
-              value:
-                resourceType: OperationOutcome
-                issue:
-                - severity: error
-                  code: exception
-                  details:
-                    text: An internal server error occurred. Please try again later.
-    BadGateway:
-      description: The requested resource identifier could not be resolved at this time
-      content:
-        application/fhir+json:
-          schema:
-            $ref: '#/components/schemas/OperationOutcome'
-          examples:
-            resolverUnavailable:
-              value:
-                resourceType: OperationOutcome
-                issue:
-                - severity: error
-                  code: invalid
-                  details:
-                    text: Public id resolution request failed.
+            invalidIntegerQuery:
+              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/invalidIntegerQuery'
+            invalidPageLowerBound:
+              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/invalidPageLowerBound'
+            invalidElementsType:
+              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/invalidElementsType'
     DivisionUpdateValidationError:
       description: Division update validation failed
       content:
@@ -654,6 +644,44 @@ components:
                     text: Locations already assigned to another division must first belong to this division or the Default division.
                   expression:
                   - locations
+    TooManyRequests:
+      description: 'Rate limit exceeded.
+
+        '
+      content:
+        application/fhir+json:
+          schema:
+            $ref: '#/components/schemas/OperationOutcome'
+          examples:
+            default:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: throttled
+                  details:
+                    text: Rate limit exceeded. Please retry after a short delay.
+    DivisionCreateValidationError:
+      description: Division creation validation failed
+      content:
+        application/fhir+json:
+          schema:
+            $ref: '#/components/schemas/OperationOutcome'
+          examples:
+            missingDivisionName:
+              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/missingDivisionName'
+            missingDivisionLocations:
+              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/missingDivisionLocations'
+            invalidLocations:
+              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/invalidLocations'
+            divisionNameTooLong:
+              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/divisionNameTooLong'
+            duplicateDivisionName:
+              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/duplicateDivisionName'
+            divisionLocationsNotFound:
+              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/divisionLocationsNotFound'
+            divisionLocationsAssigned:
+              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/divisionLocationsAssigned'
     InvalidOrMissingApiKey:
       description: 'Missing credentials or invalid API key.
 
@@ -679,59 +707,6 @@ components:
                   code: login
                   details:
                     text: Invalid or revoked API key.
-    DivisionCreateValidationError:
-      description: Division creation validation failed
-      content:
-        application/fhir+json:
-          schema:
-            $ref: '#/components/schemas/OperationOutcome'
-          examples:
-            missingDivisionName:
-              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/missingDivisionName'
-            missingDivisionLocations:
-              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/missingDivisionLocations'
-            invalidLocations:
-              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/invalidLocations'
-            divisionNameTooLong:
-              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/divisionNameTooLong'
-            duplicateDivisionName:
-              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/duplicateDivisionName'
-            divisionLocationsNotFound:
-              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/divisionLocationsNotFound'
-            divisionLocationsAssigned:
-              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/divisionLocationsAssigned'
-    TooManyRequests:
-      description: 'Rate limit exceeded.
-
-        '
-      content:
-        application/fhir+json:
-          schema:
-            $ref: '#/components/schemas/OperationOutcome'
-          examples:
-            default:
-              value:
-                resourceType: OperationOutcome
-                issue:
-                - severity: error
-                  code: throttled
-                  details:
-                    text: Rate limit exceeded. Please retry after a short delay.
-    DivisionNotFound:
-      description: Division resource was not found
-      content:
-        application/fhir+json:
-          schema:
-            $ref: '#/components/schemas/OperationOutcome'
-          examples:
-            default:
-              value:
-                resourceType: OperationOutcome
-                issue:
-                - severity: error
-                  code: not-found
-                  details:
-                    text: Division not found.
     DivisionCreated:
       description: Division created successfully
       content:
@@ -748,43 +723,45 @@ components:
                   details:
                     text: Division created successfully.
                     id: DIV-001
-    SearchValidationError:
-      description: Search request validation failed
+    BadGateway:
+      description: The requested resource identifier could not be resolved at this time
       content:
         application/fhir+json:
           schema:
             $ref: '#/components/schemas/OperationOutcome'
           examples:
-            invalidIntegerQuery:
-              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/invalidIntegerQuery'
-            invalidPageLowerBound:
-              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/invalidPageLowerBound'
-            invalidElementsType:
-              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/invalidElementsType'
+            resolverUnavailable:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: Public id resolution request failed.
+    BadRequest:
+      description: Request rejected before validation or during request processing
+      content:
+        application/fhir+json:
+          schema:
+            $ref: '#/components/schemas/OperationOutcome'
+          examples:
+            invalidJson:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: Request payload contains invalid "json" data.
+            rejectedByBackingService:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: The request could not be processed.
   schemas:
-    DivisionSearchEntry:
-      type: object
-      additionalProperties: false
-      required:
-      - resource
-      properties:
-        resource:
-          $ref: '#/components/schemas/Division'
-    OperationOutcome:
-      type: object
-      additionalProperties: false
-      required:
-      - resourceType
-      - issue
-      properties:
-        resourceType:
-          type: string
-          const: OperationOutcome
-        issue:
-          type: array
-          minItems: 1
-          items:
-            $ref: '#/components/schemas/OperationOutcomeIssue'
     DivisionCreateRequest:
       type: object
       description: Payload required to create a division. Unknown top-level properties are silently ignored by the server.
@@ -806,6 +783,43 @@ components:
             type: string
             minLength: 1
             example: LOC-001
+    OperationOutcomeDetails:
+      type: object
+      additionalProperties: false
+      required:
+      - text
+      properties:
+        text:
+          type: string
+        id:
+          type: string
+    DivisionSearchEntry:
+      type: object
+      additionalProperties: false
+      required:
+      - resource
+      properties:
+        resource:
+          $ref: '#/components/schemas/Division'
+    Division:
+      type: object
+      additionalProperties: false
+      required:
+      - resourceType
+      properties:
+        resourceType:
+          type: string
+          const: Division
+        id:
+          type: string
+          example: DIV-001
+        name:
+          type: string
+          example: North Division
+        locations:
+          type: array
+          items:
+            $ref: '#/components/schemas/DivisionLocationReference'
     DivisionLocationReference:
       type: object
       additionalProperties: false
@@ -818,24 +832,6 @@ components:
           - string
           - 'null'
           example: LOC-001
-    BundleLink:
-      type: object
-      additionalProperties: false
-      required:
-      - relation
-      - url
-      properties:
-        relation:
-          type: string
-          enum:
-          - self
-          - first
-          - previous
-          - next
-          - last
-        url:
-          type: string
-          format: uri
     DivisionSearchBundle:
       type: object
       additionalProperties: false
@@ -863,35 +859,61 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/DivisionSearchEntry'
-    Division:
+    DivisionUpdateRequest:
+      type: object
+      description: Partial division update payload. Include at least one of `name` or `locations`; omit any property that should remain unchanged. Unknown top-level properties are silently ignored by the server.
+      anyOf:
+      - required:
+        - name
+      - required:
+        - locations
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Conditionally required division name. Send `name` or `locations`. If `name` is provided, it cannot be blank or whitespace-only.
+          example: North Division
+        locations:
+          type: array
+          description: Conditionally required list of location IDs. Send `name` or `locations`. Each provided value cannot be blank or whitespace-only. Send an empty array to remove all linked locations.
+          items:
+            type: string
+            minLength: 1
+            example: LOC-001
+    OperationOutcome:
       type: object
       additionalProperties: false
       required:
       - resourceType
+      - issue
       properties:
         resourceType:
           type: string
-          const: Division
-        id:
-          type: string
-          example: DIV-001
-        name:
-          type: string
-          example: North Division
-        locations:
+          const: OperationOutcome
+        issue:
           type: array
+          minItems: 1
           items:
-            $ref: '#/components/schemas/DivisionLocationReference'
-    OperationOutcomeDetails:
+            $ref: '#/components/schemas/OperationOutcomeIssue'
+    BundleLink:
       type: object
       additionalProperties: false
       required:
-      - text
+      - relation
+      - url
       properties:
-        text:
+        relation:
           type: string
-        id:
+          enum:
+          - self
+          - first
+          - previous
+          - next
+          - last
+        url:
           type: string
+          format: uri
     OperationOutcomeIssue:
       type: object
       additionalProperties: false
@@ -916,29 +938,33 @@ components:
           type: array
           items:
             type: string
-    DivisionUpdateRequest:
-      type: object
-      description: Partial division update payload. Include at least one of `name` or `locations`; omit any property that should remain unchanged. Unknown top-level properties are silently ignored by the server.
-      anyOf:
-      - required:
-        - name
-      - required:
-        - locations
-      properties:
-        name:
-          type: string
-          minLength: 1
-          maxLength: 100
-          description: Conditionally required division name. Send `name` or `locations`. If `name` is provided, it cannot be blank or whitespace-only.
-          example: North Division
-        locations:
-          type: array
-          description: Conditionally required list of location IDs. Send `name` or `locations`. Each provided value cannot be blank or whitespace-only. Send an empty array to remove all linked locations.
-          items:
-            type: string
-            minLength: 1
-            example: LOC-001
   parameters:
+    DivisionId:
+      name: divisionId
+      in: path
+      required: true
+      description: Division identifier.
+      schema:
+        type: string
+        example: DIV-001
+    SearchPage:
+      name: _page
+      in: query
+      required: false
+      description: 1-based page number. Must be a positive integer.
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    SearchCount:
+      name: _count
+      in: query
+      required: false
+      description: Number of resources to return. Must be a positive integer.
+      schema:
+        type: integer
+        minimum: 1
+        default: 20
     SearchElements:
       name: _elements
       in: query
@@ -995,32 +1021,6 @@ components:
       schema:
         type: string
         example: id,name
-    SearchPage:
-      name: _page
-      in: query
-      required: false
-      description: 1-based page number. Must be a positive integer.
-      schema:
-        type: integer
-        minimum: 1
-        default: 1
-    DivisionId:
-      name: divisionId
-      in: path
-      required: true
-      description: Division identifier.
-      schema:
-        type: string
-        example: DIV-001
-    SearchCount:
-      name: _count
-      in: query
-      required: false
-      description: Number of resources to return. Must be a positive integer.
-      schema:
-        type: integer
-        minimum: 1
-        default: 20
   securitySchemes:
     ApiKeyHeader:
       type: apiKey

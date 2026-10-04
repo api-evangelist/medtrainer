@@ -415,23 +415,23 @@ components:
                   code: exception
                   details:
                     text: An internal server error occurred. Please try again later.
-    BadGateway:
-      description: The requested resource identifier could not be resolved at this time
+    SearchValidationError:
+      description: Search request validation failed
       content:
         application/fhir+json:
           schema:
             $ref: '#/components/schemas/OperationOutcome'
           examples:
-            resolverUnavailable:
-              value:
-                resourceType: OperationOutcome
-                issue:
-                - severity: error
-                  code: invalid
-                  details:
-                    text: Public id resolution request failed.
-    PositionNotFound:
-      description: Position resource was not found
+            invalidIntegerQuery:
+              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/invalidIntegerQuery'
+            invalidPageLowerBound:
+              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/invalidPageLowerBound'
+            invalidElementsType:
+              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/invalidElementsType'
+    TooManyRequests:
+      description: 'Rate limit exceeded.
+
+        '
       content:
         application/fhir+json:
           schema:
@@ -442,9 +442,9 @@ components:
                 resourceType: OperationOutcome
                 issue:
                 - severity: error
-                  code: not-found
+                  code: throttled
                   details:
-                    text: Position not found.
+                    text: Rate limit exceeded. Please retry after a short delay.
     InvalidOrMissingApiKey:
       description: 'Missing credentials or invalid API key.
 
@@ -470,10 +470,8 @@ components:
                   code: login
                   details:
                     text: Invalid or revoked API key.
-    TooManyRequests:
-      description: 'Rate limit exceeded.
-
-        '
+    PositionNotFound:
+      description: Position resource was not found
       content:
         application/fhir+json:
           schema:
@@ -484,58 +482,35 @@ components:
                 resourceType: OperationOutcome
                 issue:
                 - severity: error
-                  code: throttled
+                  code: not-found
                   details:
-                    text: Rate limit exceeded. Please retry after a short delay.
-    SearchValidationError:
-      description: Search request validation failed
+                    text: Position not found.
+    BadGateway:
+      description: The requested resource identifier could not be resolved at this time
       content:
         application/fhir+json:
           schema:
             $ref: '#/components/schemas/OperationOutcome'
           examples:
-            invalidIntegerQuery:
-              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/invalidIntegerQuery'
-            invalidPageLowerBound:
-              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/invalidPageLowerBound'
-            invalidElementsType:
-              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/invalidElementsType'
+            resolverUnavailable:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: Public id resolution request failed.
   schemas:
-    OperationOutcome:
+    OperationOutcomeDetails:
       type: object
       additionalProperties: false
       required:
-      - resourceType
-      - issue
+      - text
       properties:
-        resourceType:
+        text:
           type: string
-          const: OperationOutcome
-        issue:
-          type: array
-          minItems: 1
-          items:
-            $ref: '#/components/schemas/OperationOutcomeIssue'
-    Position:
-      type: object
-      additionalProperties: false
-      required:
-      - resourceType
-      properties:
-        resourceType:
-          type: string
-          const: Position
         id:
           type: string
-          example: POS-001
-        name:
-          type:
-          - string
-          - 'null'
-          example: Analyst
-        clinical:
-          type: boolean
-          example: true
     PositionSearchEntry:
       type: object
       additionalProperties: false
@@ -544,24 +519,6 @@ components:
       properties:
         resource:
           $ref: '#/components/schemas/Position'
-    BundleLink:
-      type: object
-      additionalProperties: false
-      required:
-      - relation
-      - url
-      properties:
-        relation:
-          type: string
-          enum:
-          - self
-          - first
-          - previous
-          - next
-          - last
-        url:
-          type: string
-          format: uri
     PositionSearchBundle:
       type: object
       additionalProperties: false
@@ -589,16 +546,39 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/PositionSearchEntry'
-    OperationOutcomeDetails:
+    OperationOutcome:
       type: object
       additionalProperties: false
       required:
-      - text
+      - resourceType
+      - issue
       properties:
-        text:
+        resourceType:
           type: string
-        id:
+          const: OperationOutcome
+        issue:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/OperationOutcomeIssue'
+    BundleLink:
+      type: object
+      additionalProperties: false
+      required:
+      - relation
+      - url
+      properties:
+        relation:
           type: string
+          enum:
+          - self
+          - first
+          - previous
+          - next
+          - last
+        url:
+          type: string
+          format: uri
     OperationOutcomeIssue:
       type: object
       additionalProperties: false
@@ -623,7 +603,53 @@ components:
           type: array
           items:
             type: string
+    Position:
+      type: object
+      additionalProperties: false
+      required:
+      - resourceType
+      properties:
+        resourceType:
+          type: string
+          const: Position
+        id:
+          type: string
+          example: POS-001
+        name:
+          type:
+          - string
+          - 'null'
+          example: Analyst
+        clinical:
+          type: boolean
+          example: true
   parameters:
+    SearchPage:
+      name: _page
+      in: query
+      required: false
+      description: 1-based page number. Must be a positive integer.
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    SearchCount:
+      name: _count
+      in: query
+      required: false
+      description: Number of resources to return. Must be a positive integer.
+      schema:
+        type: integer
+        minimum: 1
+        default: 20
+    PositionPublicId:
+      name: publicId
+      in: path
+      required: true
+      description: Public position identifier.
+      schema:
+        type: string
+        example: POS-001
     SearchElements:
       name: _elements
       in: query
@@ -680,32 +706,6 @@ components:
       schema:
         type: string
         example: id,name
-    SearchPage:
-      name: _page
-      in: query
-      required: false
-      description: 1-based page number. Must be a positive integer.
-      schema:
-        type: integer
-        minimum: 1
-        default: 1
-    PositionPublicId:
-      name: publicId
-      in: path
-      required: true
-      description: Public position identifier.
-      schema:
-        type: string
-        example: POS-001
-    SearchCount:
-      name: _count
-      in: query
-      required: false
-      description: Number of resources to return. Must be a positive integer.
-      schema:
-        type: integer
-        minimum: 1
-        default: 20
   securitySchemes:
     ApiKeyHeader:
       type: apiKey
