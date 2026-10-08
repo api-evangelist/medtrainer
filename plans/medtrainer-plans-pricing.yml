@@ -56,3 +56,28 @@ plans:
   api_access: undisclosed
 free_tier: false
 trial: 'Demo request only — https://medtrainer.com/demo/'
+x-canonical:
+  generated: '2026-10-08'
+  vocabulary: all/0-working/economics/plans-canonical.yml
+  models:
+  - negotiated
+  units: []
+  plans:
+  - name: Select
+    access: other
+    model: negotiated
+    model_how: derived
+    units: []
+    periods: []
+  - name: Premier
+    access: other
+    model: negotiated
+    model_how: derived
+    units: []
+    periods: []
+  - name: Signature
+    access: other
+    model: negotiated
+    model_how: derived
+    units: []
+    periods: []
