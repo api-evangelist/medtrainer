@@ -130,6 +130,31 @@ paths:
                       - publicId
 components:
   responses:
+    InvalidOrMissingApiKey:
+      description: 'Missing credentials or invalid API key.
+
+        '
+      content:
+        application/fhir+json:
+          schema:
+            $ref: '#/components/schemas/OperationOutcome'
+          examples:
+            missingCredentials:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: login
+                  details:
+                    text: 'Missing or invalid authentication credentials. Provide an API key using the X-API-Key header or Authorization: Bearer <token>.'
+            invalidApiKey:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: login
+                  details:
+                    text: Invalid or revoked API key.
     ValidationError:
       description: Request validation failed
       content:
@@ -430,21 +455,19 @@ components:
                     text: One or more location ids could not be resolved.
                   expression:
                   - extension.user.location
-    InternalServerError:
-      description: Unexpected internal error
+    SearchValidationError:
+      description: Search request validation failed
       content:
         application/fhir+json:
           schema:
             $ref: '#/components/schemas/OperationOutcome'
           examples:
-            default:
-              value:
-                resourceType: OperationOutcome
-                issue:
-                - severity: error
-                  code: exception
-                  details:
-                    text: An internal server error occurred. Please try again later.
+            invalidIntegerQuery:
+              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/invalidIntegerQuery'
+            invalidPageLowerBound:
+              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/invalidPageLowerBound'
+            invalidElementsType:
+              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/invalidElementsType'
     PractitionerCategoryNotFound:
       description: Practitioner category resource was not found
       content:
@@ -460,19 +483,6 @@ components:
                   code: not-found
                   details:
                     text: Practitioner category not found.
-    SearchValidationError:
-      description: Search request validation failed
-      content:
-        application/fhir+json:
-          schema:
-            $ref: '#/components/schemas/OperationOutcome'
-          examples:
-            invalidIntegerQuery:
-              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/invalidIntegerQuery'
-            invalidPageLowerBound:
-              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/invalidPageLowerBound'
-            invalidElementsType:
-              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/invalidElementsType'
     TooManyRequests:
       description: 'Rate limit exceeded.
 
@@ -490,42 +500,48 @@ components:
                   code: throttled
                   details:
                     text: Rate limit exceeded. Please retry after a short delay.
-    InvalidOrMissingApiKey:
-      description: 'Missing credentials or invalid API key.
-
-        '
+    InternalServerError:
+      description: Unexpected internal error
       content:
         application/fhir+json:
           schema:
             $ref: '#/components/schemas/OperationOutcome'
           examples:
-            missingCredentials:
+            default:
               value:
                 resourceType: OperationOutcome
                 issue:
                 - severity: error
-                  code: login
+                  code: exception
                   details:
-                    text: 'Missing or invalid authentication credentials. Provide an API key using the X-API-Key header or Authorization: Bearer <token>.'
-            invalidApiKey:
-              value:
-                resourceType: OperationOutcome
-                issue:
-                - severity: error
-                  code: login
-                  details:
-                    text: Invalid or revoked API key.
+                    text: An internal server error occurred. Please try again later.
   schemas:
-    OperationOutcomeDetails:
+    PractitionerCategorySearchEntry:
       type: object
       additionalProperties: false
       required:
-      - text
+      - resource
       properties:
-        text:
+        resource:
+          $ref: '#/components/schemas/PractitionerCategory'
+    BundleLink:
+      type: object
+      additionalProperties: false
+      required:
+      - relation
+      - url
+      properties:
+        relation:
           type: string
-        id:
+          enum:
+          - self
+          - first
+          - previous
+          - next
+          - last
+        url:
           type: string
+          format: uri
     PractitionerCategorySearchBundle:
       type: object
       additionalProperties: false
@@ -570,14 +586,6 @@ components:
           - string
           - 'null'
           example: Nursing
-    PractitionerCategorySearchEntry:
-      type: object
-      additionalProperties: false
-      required:
-      - resource
-      properties:
-        resource:
-          $ref: '#/components/schemas/PractitionerCategory'
     OperationOutcome:
       type: object
       additionalProperties: false
@@ -593,24 +601,6 @@ components:
           minItems: 1
           items:
             $ref: '#/components/schemas/OperationOutcomeIssue'
-    BundleLink:
-      type: object
-      additionalProperties: false
-      required:
-      - relation
-      - url
-      properties:
-        relation:
-          type: string
-          enum:
-          - self
-          - first
-          - previous
-          - next
-          - last
-        url:
-          type: string
-          format: uri
     OperationOutcomeIssue:
       type: object
       additionalProperties: false
@@ -635,15 +625,26 @@ components:
           type: array
           items:
             type: string
+    OperationOutcomeDetails:
+      type: object
+      additionalProperties: false
+      required:
+      - text
+      properties:
+        text:
+          type: string
+        id:
+          type: string
   parameters:
-    PractitionerCategoryPublicId:
-      name: publicId
-      in: path
-      required: true
-      description: Public practitioner category identifier.
+    SearchCount:
+      name: _count
+      in: query
+      required: false
+      description: Number of resources to return. Must be a positive integer.
       schema:
-        type: string
-        example: PCAT-001
+        type: integer
+        minimum: 1
+        default: 20
     SearchPage:
       name: _page
       in: query
@@ -675,15 +676,14 @@ components:
       schema:
         type: string
         example: id,name
-    SearchCount:
-      name: _count
-      in: query
-      required: false
-      description: Number of resources to return. Must be a positive integer.
+    PractitionerCategoryPublicId:
+      name: publicId
+      in: path
+      required: true
+      description: Public practitioner category identifier.
       schema:
-        type: integer
-        minimum: 1
-        default: 20
+        type: string
+        example: PCAT-001
   securitySchemes:
     ApiKeyHeader:
       type: apiKey

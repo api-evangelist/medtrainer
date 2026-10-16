@@ -100,6 +100,31 @@ paths:
           $ref: '#/components/responses/BadGateway'
 components:
   responses:
+    InvalidOrMissingApiKey:
+      description: 'Missing credentials or invalid API key.
+
+        '
+      content:
+        application/fhir+json:
+          schema:
+            $ref: '#/components/schemas/OperationOutcome'
+          examples:
+            missingCredentials:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: login
+                  details:
+                    text: 'Missing or invalid authentication credentials. Provide an API key using the X-API-Key header or Authorization: Bearer <token>.'
+            invalidApiKey:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: login
+                  details:
+                    text: Invalid or revoked API key.
     ValidationError:
       description: Request validation failed
       content:
@@ -400,21 +425,6 @@ components:
                     text: One or more location ids could not be resolved.
                   expression:
                   - extension.user.location
-    InternalServerError:
-      description: Unexpected internal error
-      content:
-        application/fhir+json:
-          schema:
-            $ref: '#/components/schemas/OperationOutcome'
-          examples:
-            default:
-              value:
-                resourceType: OperationOutcome
-                issue:
-                - severity: error
-                  code: exception
-                  details:
-                    text: An internal server error occurred. Please try again later.
     SearchValidationError:
       description: Search request validation failed
       content:
@@ -428,6 +438,21 @@ components:
               $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/invalidPageLowerBound'
             invalidElementsType:
               $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/invalidElementsType'
+    PositionNotFound:
+      description: Position resource was not found
+      content:
+        application/fhir+json:
+          schema:
+            $ref: '#/components/schemas/OperationOutcome'
+          examples:
+            default:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: not-found
+                  details:
+                    text: Position not found.
     TooManyRequests:
       description: 'Rate limit exceeded.
 
@@ -445,46 +470,6 @@ components:
                   code: throttled
                   details:
                     text: Rate limit exceeded. Please retry after a short delay.
-    InvalidOrMissingApiKey:
-      description: 'Missing credentials or invalid API key.
-
-        '
-      content:
-        application/fhir+json:
-          schema:
-            $ref: '#/components/schemas/OperationOutcome'
-          examples:
-            missingCredentials:
-              value:
-                resourceType: OperationOutcome
-                issue:
-                - severity: error
-                  code: login
-                  details:
-                    text: 'Missing or invalid authentication credentials. Provide an API key using the X-API-Key header or Authorization: Bearer <token>.'
-            invalidApiKey:
-              value:
-                resourceType: OperationOutcome
-                issue:
-                - severity: error
-                  code: login
-                  details:
-                    text: Invalid or revoked API key.
-    PositionNotFound:
-      description: Position resource was not found
-      content:
-        application/fhir+json:
-          schema:
-            $ref: '#/components/schemas/OperationOutcome'
-          examples:
-            default:
-              value:
-                resourceType: OperationOutcome
-                issue:
-                - severity: error
-                  code: not-found
-                  details:
-                    text: Position not found.
     BadGateway:
       description: The requested resource identifier could not be resolved at this time
       content:
@@ -500,25 +485,22 @@ components:
                   code: invalid
                   details:
                     text: Public id resolution request failed.
+    InternalServerError:
+      description: Unexpected internal error
+      content:
+        application/fhir+json:
+          schema:
+            $ref: '#/components/schemas/OperationOutcome'
+          examples:
+            default:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: exception
+                  details:
+                    text: An internal server error occurred. Please try again later.
   schemas:
-    OperationOutcomeDetails:
-      type: object
-      additionalProperties: false
-      required:
-      - text
-      properties:
-        text:
-          type: string
-        id:
-          type: string
-    PositionSearchEntry:
-      type: object
-      additionalProperties: false
-      required:
-      - resource
-      properties:
-        resource:
-          $ref: '#/components/schemas/Position'
     PositionSearchBundle:
       type: object
       additionalProperties: false
@@ -546,21 +528,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/PositionSearchEntry'
-    OperationOutcome:
-      type: object
-      additionalProperties: false
-      required:
-      - resourceType
-      - issue
-      properties:
-        resourceType:
-          type: string
-          const: OperationOutcome
-        issue:
-          type: array
-          minItems: 1
-          items:
-            $ref: '#/components/schemas/OperationOutcomeIssue'
     BundleLink:
       type: object
       additionalProperties: false
@@ -579,6 +546,21 @@ components:
         url:
           type: string
           format: uri
+    OperationOutcome:
+      type: object
+      additionalProperties: false
+      required:
+      - resourceType
+      - issue
+      properties:
+        resourceType:
+          type: string
+          const: OperationOutcome
+        issue:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/OperationOutcomeIssue'
     OperationOutcomeIssue:
       type: object
       additionalProperties: false
@@ -603,6 +585,16 @@ components:
           type: array
           items:
             type: string
+    OperationOutcomeDetails:
+      type: object
+      additionalProperties: false
+      required:
+      - text
+      properties:
+        text:
+          type: string
+        id:
+          type: string
     Position:
       type: object
       additionalProperties: false
@@ -623,33 +615,15 @@ components:
         clinical:
           type: boolean
           example: true
+    PositionSearchEntry:
+      type: object
+      additionalProperties: false
+      required:
+      - resource
+      properties:
+        resource:
+          $ref: '#/components/schemas/Position'
   parameters:
-    SearchPage:
-      name: _page
-      in: query
-      required: false
-      description: 1-based page number. Must be a positive integer.
-      schema:
-        type: integer
-        minimum: 1
-        default: 1
-    SearchCount:
-      name: _count
-      in: query
-      required: false
-      description: Number of resources to return. Must be a positive integer.
-      schema:
-        type: integer
-        minimum: 1
-        default: 20
-    PositionPublicId:
-      name: publicId
-      in: path
-      required: true
-      description: Public position identifier.
-      schema:
-        type: string
-        example: POS-001
     SearchElements:
       name: _elements
       in: query
@@ -706,6 +680,32 @@ components:
       schema:
         type: string
         example: id,name
+    PositionPublicId:
+      name: publicId
+      in: path
+      required: true
+      description: Public position identifier.
+      schema:
+        type: string
+        example: POS-001
+    SearchCount:
+      name: _count
+      in: query
+      required: false
+      description: Number of resources to return. Must be a positive integer.
+      schema:
+        type: integer
+        minimum: 1
+        default: 20
+    SearchPage:
+      name: _page
+      in: query
+      required: false
+      description: 1-based page number. Must be a positive integer.
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
   securitySchemes:
     ApiKeyHeader:
       type: apiKey
