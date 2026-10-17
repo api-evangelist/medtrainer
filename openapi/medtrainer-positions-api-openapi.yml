@@ -99,32 +99,213 @@ paths:
         '502':
           $ref: '#/components/responses/BadGateway'
 components:
-  responses:
-    InvalidOrMissingApiKey:
-      description: 'Missing credentials or invalid API key.
+  schemas:
+    OperationOutcomeDetails:
+      type: object
+      additionalProperties: false
+      required:
+      - text
+      properties:
+        text:
+          type: string
+        id:
+          type: string
+    OperationOutcome:
+      type: object
+      additionalProperties: false
+      required:
+      - resourceType
+      - issue
+      properties:
+        resourceType:
+          type: string
+          const: OperationOutcome
+        issue:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/OperationOutcomeIssue'
+    PositionSearchBundle:
+      type: object
+      additionalProperties: false
+      required:
+      - resourceType
+      - type
+      - total
+      - link
+      - entry
+      properties:
+        resourceType:
+          type: string
+          const: Bundle
+        type:
+          type: string
+          const: searchset
+        total:
+          type: integer
+          minimum: 0
+        link:
+          type: array
+          items:
+            $ref: '#/components/schemas/BundleLink'
+        entry:
+          type: array
+          items:
+            $ref: '#/components/schemas/PositionSearchEntry'
+    OperationOutcomeIssue:
+      type: object
+      additionalProperties: false
+      required:
+      - severity
+      - code
+      - details
+      properties:
+        severity:
+          type: string
+          enum:
+          - fatal
+          - error
+          - warning
+          - information
+        code:
+          type: string
+          example: invalid
+        details:
+          $ref: '#/components/schemas/OperationOutcomeDetails'
+        expression:
+          type: array
+          items:
+            type: string
+    Position:
+      type: object
+      additionalProperties: false
+      required:
+      - resourceType
+      properties:
+        resourceType:
+          type: string
+          const: Position
+        id:
+          type: string
+          example: POS-001
+        name:
+          type:
+          - string
+          - 'null'
+          example: Analyst
+        clinical:
+          type: boolean
+          example: true
+    PositionSearchEntry:
+      type: object
+      additionalProperties: false
+      required:
+      - resource
+      properties:
+        resource:
+          $ref: '#/components/schemas/Position'
+    BundleLink:
+      type: object
+      additionalProperties: false
+      required:
+      - relation
+      - url
+      properties:
+        relation:
+          type: string
+          enum:
+          - self
+          - first
+          - previous
+          - next
+          - last
+        url:
+          type: string
+          format: uri
+  parameters:
+    SearchElements:
+      name: _elements
+      in: query
+      required: false
+      description: 'Comma-separated field selector.
+
+
+        For location, division, position, department, and practitioner category
+
+        searches, the implemented selectors are `id`, `name`, `division`,
+
+        `locations`, and `clinical` as applicable.
+
+        The default when `_elements` is omitted: locations default to
+
+        `id,name`; divisions default to `id,name,locations`; positions default
+
+        to `id,name,clinical`; departments default to `id,name`; practitioner
+
+        categories default to `id,name`.
+
+
+        For practitioners, nested selectors are allowed, including values such
+
+        as `telecom.email`, `telecom.homePhone`, `address.city`,
+
+        `extension.user.status`, `extension.user.statusReason`,
+
+        `extension.user.userType`, or `extension.provider.npiNumber`.
+
+        The public practitioner response uses
+
+        `extension.user.status` and `extension.user.statusReason` for the
+
+        visible status state; the legacy `employeeCategoryId` is not exposed.
+
+        When `_elements` is omitted on practitioner search or get-by-id, the
+
+        full public resource is returned.
+
+
+        Whitespace around values is trimmed. Unknown selectors are preserved in
+
+        pagination links but ignored when each resource is built.
+
+
+        Pagination `link.url` values are returned as absolute URLs including
+
+        scheme and host (for example, `/api/v1/...` resolves against the active
+
+        server entry).
 
         '
-      content:
-        application/fhir+json:
-          schema:
-            $ref: '#/components/schemas/OperationOutcome'
-          examples:
-            missingCredentials:
-              value:
-                resourceType: OperationOutcome
-                issue:
-                - severity: error
-                  code: login
-                  details:
-                    text: 'Missing or invalid authentication credentials. Provide an API key using the X-API-Key header or Authorization: Bearer <token>.'
-            invalidApiKey:
-              value:
-                resourceType: OperationOutcome
-                issue:
-                - severity: error
-                  code: login
-                  details:
-                    text: Invalid or revoked API key.
+      schema:
+        type: string
+        example: id,name
+    PositionPublicId:
+      name: publicId
+      in: path
+      required: true
+      description: Public position identifier.
+      schema:
+        type: string
+        example: POS-001
+    SearchPage:
+      name: _page
+      in: query
+      required: false
+      description: 1-based page number. Must be a positive integer.
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    SearchCount:
+      name: _count
+      in: query
+      required: false
+      description: Number of resources to return. Must be a positive integer.
+      schema:
+        type: integer
+        minimum: 1
+        default: 20
+  responses:
     ValidationError:
       description: Request validation failed
       content:
@@ -425,19 +606,36 @@ components:
                     text: One or more location ids could not be resolved.
                   expression:
                   - extension.user.location
-    SearchValidationError:
-      description: Search request validation failed
+    InternalServerError:
+      description: Unexpected internal error
       content:
         application/fhir+json:
           schema:
             $ref: '#/components/schemas/OperationOutcome'
           examples:
-            invalidIntegerQuery:
-              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/invalidIntegerQuery'
-            invalidPageLowerBound:
-              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/invalidPageLowerBound'
-            invalidElementsType:
-              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/invalidElementsType'
+            default:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: exception
+                  details:
+                    text: An internal server error occurred. Please try again later.
+    BadGateway:
+      description: The requested resource identifier could not be resolved at this time
+      content:
+        application/fhir+json:
+          schema:
+            $ref: '#/components/schemas/OperationOutcome'
+          examples:
+            resolverUnavailable:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: invalid
+                  details:
+                    text: Public id resolution request failed.
     PositionNotFound:
       description: Position resource was not found
       content:
@@ -470,242 +668,44 @@ components:
                   code: throttled
                   details:
                     text: Rate limit exceeded. Please retry after a short delay.
-    BadGateway:
-      description: The requested resource identifier could not be resolved at this time
+    SearchValidationError:
+      description: Search request validation failed
       content:
         application/fhir+json:
           schema:
             $ref: '#/components/schemas/OperationOutcome'
           examples:
-            resolverUnavailable:
-              value:
-                resourceType: OperationOutcome
-                issue:
-                - severity: error
-                  code: invalid
-                  details:
-                    text: Public id resolution request failed.
-    InternalServerError:
-      description: Unexpected internal error
-      content:
-        application/fhir+json:
-          schema:
-            $ref: '#/components/schemas/OperationOutcome'
-          examples:
-            default:
-              value:
-                resourceType: OperationOutcome
-                issue:
-                - severity: error
-                  code: exception
-                  details:
-                    text: An internal server error occurred. Please try again later.
-  schemas:
-    PositionSearchBundle:
-      type: object
-      additionalProperties: false
-      required:
-      - resourceType
-      - type
-      - total
-      - link
-      - entry
-      properties:
-        resourceType:
-          type: string
-          const: Bundle
-        type:
-          type: string
-          const: searchset
-        total:
-          type: integer
-          minimum: 0
-        link:
-          type: array
-          items:
-            $ref: '#/components/schemas/BundleLink'
-        entry:
-          type: array
-          items:
-            $ref: '#/components/schemas/PositionSearchEntry'
-    BundleLink:
-      type: object
-      additionalProperties: false
-      required:
-      - relation
-      - url
-      properties:
-        relation:
-          type: string
-          enum:
-          - self
-          - first
-          - previous
-          - next
-          - last
-        url:
-          type: string
-          format: uri
-    OperationOutcome:
-      type: object
-      additionalProperties: false
-      required:
-      - resourceType
-      - issue
-      properties:
-        resourceType:
-          type: string
-          const: OperationOutcome
-        issue:
-          type: array
-          minItems: 1
-          items:
-            $ref: '#/components/schemas/OperationOutcomeIssue'
-    OperationOutcomeIssue:
-      type: object
-      additionalProperties: false
-      required:
-      - severity
-      - code
-      - details
-      properties:
-        severity:
-          type: string
-          enum:
-          - fatal
-          - error
-          - warning
-          - information
-        code:
-          type: string
-          example: invalid
-        details:
-          $ref: '#/components/schemas/OperationOutcomeDetails'
-        expression:
-          type: array
-          items:
-            type: string
-    OperationOutcomeDetails:
-      type: object
-      additionalProperties: false
-      required:
-      - text
-      properties:
-        text:
-          type: string
-        id:
-          type: string
-    Position:
-      type: object
-      additionalProperties: false
-      required:
-      - resourceType
-      properties:
-        resourceType:
-          type: string
-          const: Position
-        id:
-          type: string
-          example: POS-001
-        name:
-          type:
-          - string
-          - 'null'
-          example: Analyst
-        clinical:
-          type: boolean
-          example: true
-    PositionSearchEntry:
-      type: object
-      additionalProperties: false
-      required:
-      - resource
-      properties:
-        resource:
-          $ref: '#/components/schemas/Position'
-  parameters:
-    SearchElements:
-      name: _elements
-      in: query
-      required: false
-      description: 'Comma-separated field selector.
-
-
-        For location, division, position, department, and practitioner category
-
-        searches, the implemented selectors are `id`, `name`, `division`,
-
-        `locations`, and `clinical` as applicable.
-
-        The default when `_elements` is omitted: locations default to
-
-        `id,name`; divisions default to `id,name,locations`; positions default
-
-        to `id,name,clinical`; departments default to `id,name`; practitioner
-
-        categories default to `id,name`.
-
-
-        For practitioners, nested selectors are allowed, including values such
-
-        as `telecom.email`, `telecom.homePhone`, `address.city`,
-
-        `extension.user.status`, `extension.user.statusReason`,
-
-        `extension.user.userType`, or `extension.provider.npiNumber`.
-
-        The public practitioner response uses
-
-        `extension.user.status` and `extension.user.statusReason` for the
-
-        visible status state; the legacy `employeeCategoryId` is not exposed.
-
-        When `_elements` is omitted on practitioner search or get-by-id, the
-
-        full public resource is returned.
-
-
-        Whitespace around values is trimmed. Unknown selectors are preserved in
-
-        pagination links but ignored when each resource is built.
-
-
-        Pagination `link.url` values are returned as absolute URLs including
-
-        scheme and host (for example, `/api/v1/...` resolves against the active
-
-        server entry).
+            invalidIntegerQuery:
+              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/invalidIntegerQuery'
+            invalidPageLowerBound:
+              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/invalidPageLowerBound'
+            invalidElementsType:
+              $ref: '#/components/responses/ValidationError/content/application~1fhir+json/examples/invalidElementsType'
+    InvalidOrMissingApiKey:
+      description: 'Missing credentials or invalid API key.
 
         '
-      schema:
-        type: string
-        example: id,name
-    PositionPublicId:
-      name: publicId
-      in: path
-      required: true
-      description: Public position identifier.
-      schema:
-        type: string
-        example: POS-001
-    SearchCount:
-      name: _count
-      in: query
-      required: false
-      description: Number of resources to return. Must be a positive integer.
-      schema:
-        type: integer
-        minimum: 1
-        default: 20
-    SearchPage:
-      name: _page
-      in: query
-      required: false
-      description: 1-based page number. Must be a positive integer.
-      schema:
-        type: integer
-        minimum: 1
-        default: 1
+      content:
+        application/fhir+json:
+          schema:
+            $ref: '#/components/schemas/OperationOutcome'
+          examples:
+            missingCredentials:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: login
+                  details:
+                    text: 'Missing or invalid authentication credentials. Provide an API key using the X-API-Key header or Authorization: Bearer <token>.'
+            invalidApiKey:
+              value:
+                resourceType: OperationOutcome
+                issue:
+                - severity: error
+                  code: login
+                  details:
+                    text: Invalid or revoked API key.
   securitySchemes:
     ApiKeyHeader:
       type: apiKey
