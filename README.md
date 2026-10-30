@@ -64,5 +64,132 @@
 > Full detail: **[Where this data comes from](https://apievangelist.com/about/where-our-data-comes-from)**
 <!-- API-EVANGELIST-PROVENANCE:END -->
 
-MedTrainer is a company surfaced via the API Evangelist harvest backlog (source: secondary-market) and added to the network as a stub for full-pipeline profiling.
-- https://forgeglobal.com/medtrainer_stock/
+MedTrainer is a healthcare workforce compliance software company that consolidates learning management, credentialing and provider enrollment, document and policy management, incident reporting, safety plans, contract management and exclusion/sanction monitoring into a single all-in-one platform for medical practices, ambulatory surgery centers, urgent care, behavioral health, dental groups, community health centers and long-term care organizations. The company publishes a MedTrainer Public API at api.medtrainer.com, documented with an OpenAPI 3.1 definition rendered through Redoc, that lets external integrations search and manage the core provider directory — locations, divisions, departments, positions, practitioner categories and practitioners. The API is notable for being FHIR-aligned: resource payloads use HL7 FHIR shapes and the application/fhir+json media type, searches return FHIR Bundle envelopes with FHIR search parameters (_count, _page, _elements), and every error is returned as a FHIR OperationOutcome. Access is customer-gated behind an API key generated from the platform Organization settings, and the wider platform authenticates against an Auth0-backed OpenID Connect provider at auth.medtrainer.com.
+
+**Areas:** Company · Healthcare · Compliance · Credentialing · LMS · Provider Directory · FHIR · HL7 · Training · Risk Management · Software-as-a-Service
+
+## MedTrainer on APIs.io
+
+Everything profiled for MedTrainer is published on APIs.io rather than in this repository. Start at the provider page — **[apis.io/providers/medtrainer/](https://apis.io/providers/medtrainer/)** — or go straight to one of the APIs or properties below.
+
+### APIs (6)
+
+- [MedTrainer Departments API](https://apis.io/apis/medtrainer/medtrainer-departments-api/) — Public department lookup endpoints
+- [MedTrainer Divisions API](https://apis.io/apis/medtrainer/medtrainer-divisions-api/) — Public division lookup and mutation endpoints
+- [MedTrainer Locations API](https://apis.io/apis/medtrainer/medtrainer-locations-api/) — Public location lookup and mutation endpoints
+- [MedTrainer Positions API](https://apis.io/apis/medtrainer/medtrainer-positions-api/) — Public position lookup endpoints
+- [MedTrainer Practitioner Categories API](https://apis.io/apis/medtrainer/medtrainer-practitioner-categories-api/) — Public practitioner category lookup endpoints
+- [MedTrainer Practitioners API](https://apis.io/apis/medtrainer/medtrainer-practitioners-api/) — Public practitioner lookup, search, and mutation endpoints
+
+### Published properties
+
+Each property below is a page on APIs.io carrying the machine-readable artifact and what it says.
+
+#### MCP servers (1)
+
+Model Context Protocol servers that expose the API to agents.
+
+- [MedTrainer MCP Server (WordPress MCP Adapter)](https://apis.io/servers/medtrainer/medtrainer-mcp-server-wordpress-mcp-adapter/)
+
+#### Overlays (1)
+
+OpenAPI overlays, including conversational phrasing for each operation.
+
+- [Medtrainer Public Api Overlay](https://apis.io/overlays/medtrainer/medtrainer-public-api-overlay/)
+
+#### Security (3)
+
+Authentication, trust centre, and vulnerability disclosure.
+
+- [Medtrainer Authentication](https://apis.io/security/medtrainer/medtrainer-authentication/)
+- [Medtrainer Domain Security](https://apis.io/security/medtrainer/medtrainer-domain-security/)
+- [Medtrainer Vulnerability Disclosure](https://apis.io/security/medtrainer/medtrainer-vulnerability-disclosure/)
+
+#### OAuth scopes (1)
+
+The permissions the API asks for.
+
+- [Medtrainer Scopes](https://apis.io/scopes/medtrainer/medtrainer-scopes/)
+
+#### Plans and pricing (1)
+
+Published plans, tiers and prices.
+
+- [Medtrainer Plans Pricing](https://apis.io/plans/medtrainer/medtrainer-plans-pricing/)
+
+#### Rate limits (1)
+
+Published request limits.
+
+- [Medtrainer Rate Limits](https://apis.io/rate-limits/medtrainer/medtrainer-rate-limits/)
+
+## Where to find this API
+
+Links to the company's own pages. This repository publishes no copy of their specifications — the canonical document is theirs and lives at the URLs below.
+
+- [Website](https://medtrainer.com/)
+- [Documentation](https://api.medtrainer.com/docs)
+- [Getting started](https://api.medtrainer.com/docs#section/Getting-started)
+- [API reference](https://api.medtrainer.com/docs)
+- [Pricing](https://medtrainer.com/pricing/)
+- [Sign up](https://medtrainer.com/demo/)
+- [Support](https://support.medtrainer.com/)
+- [Blog](https://medtrainer.com/blog/)
+- [Security](https://medtrainer.com/security/)
+- [Terms of service](https://medtrainer.com/terms/)
+- [Privacy policy](https://medtrainer.com/privacy/)
+
+## API Evangelist rating
+
+**Kin Score 55.9** — strong · rubric 0.25.0 · scored 2026-10-23
+
+| Facet | Score |
+|---|---|
+| Discoverability | 75.0 |
+| Contract quality | 50.2 |
+| Contract governance | 18.2 |
+| Operational transparency | 10.5 |
+| Developer ergonomics | 58.9 |
+| Access clarity | 84.2 |
+
+**Agent readiness 44.9** — agent-ready (gated down from agent-native)
+
+| Agent-readiness dimension | Result |
+|---|---|
+| Spec Presence | yes |
+| Agentic Access | — |
+| Reversibility Documented | — |
+| MCP Server | platform (partial credit) |
+| Auth Clarity | served (partial credit) |
+| Idempotency | — |
+| Error Semantics | verified |
+| OpenAPI Examples | verified |
+| Rate Limit Signal | documented (partial credit) |
+| Event Surface Described | — |
+| Agent Skills | derived (partial credit) |
+| Well Known Catalog | — |
+| Consent Identity | — |
+| Agent Card | — |
+| Dry Run Mode | — |
+| Delegated Identity | served (partial credit) |
+| Protected Resource Metadata | verified |
+| Dynamic Client Registration | — |
+| Agentic Commerce | — |
+| Pagination Ratio | na |
+| Operation Distinctiveness | distinct |
+
+**Regulatory alignment 41.4** — Health
+
+The rubric is published at [github.com/api-evangelist/kin-score](https://github.com/api-evangelist/kin-score). The per-check breakdown behind these numbers — which checks were earned, partial or missed — along with score history and how this provider compares to its peers, is available at [apis.io/providers/medtrainer/](https://apis.io/providers/medtrainer/).
+
+## How this profile is made
+
+API Evangelist profiles a company's public API surface the way a developer would find it: the website, developer portal and documentation, the specifications it publishes, its public repositories, and its pricing, status and changelog pages. From that it derives the properties above — contracts split per API, workflows, schemas, collections, governance rules, plans and rate limits — and scores them against the published [Kin Score rubric](https://github.com/api-evangelist/kin-score).
+
+The artifacts are published on [APIs.io](https://apis.io), not in this repository. This repository is the public record for MedTrainer: the place to say something is wrong, missing or out of date, and to ask for a re-score or a removal.
+
+## Open an issue
+
+- **Something about this listing** — a wrong description, a missing API, a stale artifact or a question about the rating: [open an issue on this repository](https://github.com/api-evangelist/medtrainer/issues/new).
+- **A new API, or one that is not in the catalog yet** — [submit it on APIs.io](https://apis.io/add/).
+- **Anything else** — [the APIs.io inbox](https://github.com/api-search/inbox/issues/new) or [info@apievangelist.com](mailto:info@apievangelist.com).
